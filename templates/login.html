@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+    <meta charset="UTF-8">
+    <title>YundingCloud-Login</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f0f0f0;
+        }
+        .container {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            width: 300px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        .form-group input {
+            width: 100%;
+            padding: 8px;
+            box-sizing: border-box;
+        }
+        .form-group button {
+            width: 100%;
+            padding: 10px;
+            background-color: #007BFF;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .form-group button:hover {
+            background-color: #0056b3;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 24px;
+        }
+        .back-link {
+            font-size: 14px;
+            color: #007BFF;
+            cursor: pointer;
+            text-decoration: underline;
+        }
+        .flash-message {
+            color: red;
+            margin-bottom: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <form method="POST" action="/login">
+            {% if not uid %}
+                <div class="header">
+                    <h1>Login</h1>
+                </div>
+                <div class="form-group">
+                    <label for="uid">User Name</label>
+                    <input type="text" id="uid" name="uid" required>
+                </div>
+            {% elif reset == "true" %}
+                <div class="header">
+                    <h1>User {{uid}}, Please reset your password</h1>
+                    <span class="back-link" onclick="window.location.href='/login'">Back</span>
+                </div>
+                <div class="form-group">
+                    <label for="pwd">New Password</label>
+                    <input type="password" id="pwd" name="pwd" required>
+                </div>
+                <input type="hidden" name="uid" value="{{ uid }}">
+                <input type="hidden" name="reset" value="true">
+            {% else %}
+                <div class="header">
+                    <h1>User {{uid}}, Please enter your password</h1>
+                    <span class="back-link" onclick="window.location.href='/login'">Back</span>
+                </div>
+                <div class="form-group">
+                    <label for="pwd">Password</label>
+                    <input type="password" id="pwd" name="pwd" required>
+                </div>
+                <input type="hidden" name="uid" value="{{ uid }}">
+            {% endif %}
+            <div class="flash-message">
+                {% with messages = get_flashed_messages() %}
+                    {% if messages %}
+                        {% for message in messages %}
+                            <p>{{ message }}</p>
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
+            </div>
+            <div class="form-group">
+                <button type="submit">Next</button>
+            </div>
+        </form>
+    </div>
+</body>
+</html>
