@@ -20,7 +20,7 @@ def _read_user_roots(user_list:list) -> dict:
     """
     make_private_path = lambda user, sub_folder: os.path.join(utils.HOME_ROOT, user, sub_folder)
     user_folders = {user: {"private": make_private_path(user, utils.PRIVATE_FOLDER),
-                           "public": make_private_path(utils.SHARE_USER, user)}
+                           "share": make_private_path(utils.SHARE_USER, user)}
                            for user in user_list}
     return user_folders
 
@@ -56,6 +56,15 @@ def get_user_loginInfo() -> dict:
 def get_user_folders() -> dict:
     """
     get user folders
+
+    :return: user folders:
+        {
+            user1: {
+                "private": user1 private folder path,
+                "public": user1 public folder path
+            },
+            ...
+        }
     """
     
     user_folders = _read_user_roots(get_users())
@@ -105,3 +114,30 @@ def change_pwd(uid:str, new_pwd:str) -> None:
     login_info = get_user_loginInfo()
     login_info[uid] = utils.encrypt_pwd(new_pwd)
     utils.write_file(LOGIN_PATH, login_info)
+
+def get_absPath(uid:str, private_path:str) -> str:
+    """
+    trans private path to absolute path
+
+    :param uid: user id
+    :param private_path: private path
+    :return: absolute path
+    """
+    if private_path is None or private_path == "":
+        return None
+    if uid not in get_users():
+        return None
+    
+    path_split = private_path.split("/")
+
+    filter_base = None # get base folder
+    if path_split[0] == "public":
+        filter_base = utils.PUBLIC_PATH
+    else:
+        filter_base = get_user_folders()[uid].get(path_split[0])
+    if filter_base is None: # base folder not exist
+        return None
+    
+    tar_path = os.path.join(filter_base, "/".join(path_split[1:]))
+    return tar_path
+

@@ -7,14 +7,28 @@ import math
 import os
 import socket
 import hashlib
+from flask import make_response, send_file, Response
+import markdown
+from urllib.parse import quote
 
-PRIVATE_FOLDER = "private" # private folder name in user folder
-PUBLIC_FOLDER = "public" # public folder name in `share` folder
+PRIVATE_FOLDER = "private" # private folder name in user folder (owner rw, others --)
+SHARE_FOLDER = "share" # share folder name in `share` folder (owner rw, others r-)
+PUBLIC_FOLDER = "public" # public folder name in `share` folder (all rw)
+
 SHARE_USER = "share" # share user name
+
+FILE_TYPE = {
+    "image": ['.jpg', '.jpeg', '.png', '.gif'],
+    "video": ['.mp4', '.avi', '.mov', '.mp3', '.wav', '.mkv'],
+    "pdf": ['.pdf'],
+    "markdown": ['.md']
+}
 
 PATH = os.path.dirname(os.path.abspath(__file__))
 HOME_ROOT = os.path.join(PATH, "home")
 DATA_PATH = os.path.join(PATH, "data")
+PUBLIC_PATH = os.path.join(HOME_ROOT, SHARE_USER, PUBLIC_FOLDER)
+
 USER_LIST = []
 
 def condition_assert(message, condition=False) -> None:
@@ -65,6 +79,10 @@ def list_dir(path: str) -> list:
     :param path: folder path
     :return: file list [dict{"name":str, "size":str, "file":bool},...]
     """
+    print(path)
+    if not os.path.isdir(path): # path not exist
+        return []
+
     files = os.listdir(path)
     file_list = []
     for file in files:
@@ -82,6 +100,7 @@ def list_dir(path: str) -> list:
                 "file": False
             }
         file_list.append(file_info)
+    print(file_list)
     return file_list
 
 def make_unique(path:str, file_name:str) -> tuple:
@@ -124,6 +143,76 @@ def write_file(file_path:str, data) -> None:
     with open(file_path,"w",encoding="utf-8") as f:
         js.dump(data, f, ensure_ascii=False, indent=True)
 
+def get_filetype(file_path:str) -> str:
+    """
+    get file type
+    
+    :param file_path: file path 
+    :return: file type
+    """
+    extension = os.path.splitext(file_path)[1].lower() # get file extension
+    file_type = "other"
+    for key in FILE_TYPE.keys():
+        if extension in FILE_TYPE[key]:
+            file_type = key
+            break
+    return file_type
+
+def make_preview_response(file_path:str, file_type:str) -> Response:
+    """
+    make file preview response
+    
+    :param file_path: file path
+    :param file_type: file type
+    :return: response
+    """
+    # make response according to file type
+    if file_type == "image":
+        with open(file_path, 'rb') as f:  
+            response = make_response(f.read())  
+            response.headers['Content-Type'] = 'image/jpeg' # set Content-Type
+            return response  
+    elif file_type == "video":
+        with open(file_path, 'rb') as f:
+            response = make_response(f.read())
+            response.headers['Content-Type'] = 'video/mp4'
+            return response
+    elif file_type == "pdf":
+        with open(file_path, 'rb') as f:
+            response = make_response(f.read())
+            response.headers['Content-Type'] = 'application/pdf'
+            return response
+    elif file_type == "markdown":
+        with open(file_path, 'r', encoding="utf-8") as f:
+            md_content = f.read()
+            html_content = markdown.markdown(md_content)
+            response = make_response(html_content)
+            response.headers['Content-Type'] = 'text/html; charset=utf-8'
+            return response
+    else:
+        try: # try to open as text
+            with open(file_path, 'r', encoding="utf-8") as f:
+                response = make_response(f.read())
+                response.headers['Content-Type'] = 'text/plain; charset=utf-8'
+                return response
+        except:
+            return "Unsupported file type", 400
+
+def make_download_response(file_path:str) -> Response:
+    """
+    make file download response
+
+    :param file_path: file path
+    :return: response
+    """
+    if os.path.isfile(file_path): # is file
+        # make download response
+        file_name = quote(os.path.split(file_path)[-1]) # transfer file name to UTF-8
+        file_response = send_file(file_path, as_attachment=True, download_name=file_name)
+        file_response.headers["Content-Disposition"] += ";filename*=utf-8''{}".format(file_name) # set Content-Disposition, transfer file name to UTF-8
+        return file_response
+    else:
+        return "File not exist", 404
 
 def encrypt_pwd(pwd:str) -> str:
     """

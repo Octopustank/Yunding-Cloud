@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YundingCloud-FilePreview</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='cloud/styles.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>File Preview</h1>
+        <a href="/cloud/{{ '/'.join(file.split('/')[:-1]) }}">Back</a>
+        <div class="preview">
+            {% if file_type == 'image' %}
+                <img src="/cloud/{{ file }}?preview=true" alt="Image Preview">
+            {% elif file_type == 'video' %}
+                <video controls>
+                    <source src="/cloud/{{ file }}?preview=true" type="video/mp4">
+                    Your browser does not support the video tag.
+                </video>
+            {% elif file_type == 'pdf' %}
+                <iframe src="/cloud/{{ file }}?preview=true" frameborder="0" width="100%" height="600px"></iframe>
+            {% else %}
+                <iframe src="/cloud/{{ file }}?preview=true" frameborder="0"></iframe>
+            {% endif %}
+            <p>file type: {{file_type}}</p>
+            <a href="/download/{{ file }}">Download</a>
+        </div>
+    </div>
+</body>
+</html>

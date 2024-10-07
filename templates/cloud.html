@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YundingCloud</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='cloud/styles.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>Cloud Space</h1>
+        <div>
+            <p>uid: {{uid}}</p>
+            <p>ip: {{addr}}</p>
+            <p>directory: /{{base}}</p>
+        </div>
+        <div class="file-list">
+            {% if base %}
+                <form method="GET" action="/cloud/{{ '/'.join(base.split('/')[:-1]) }}">
+                    <button type="submit" class="file-item">...</button>
+                </form>
+            {% endif %}
+            {% if files %}
+                {% for file in files %}
+                    <form method="GET" action="/cloud/{{ base }}/{{ file['name'] }}">
+                        <button type="submit" class="file-item">{{ file["name"] }}</button>
+                        {% if file["file"] == True %}
+                            {{ file["size"] }}
+                        {% endif %}
+                    </form>
+                {% endfor %}
+            {% else %}
+                <p>No files in this directory :-(</p>
+            {% endif %}
+        </div>
+    </div>
+</body>
+</html>

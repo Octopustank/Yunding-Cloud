@@ -3,6 +3,7 @@ import datetime as dt
 import os
 from urllib.parse import quote
 import time as tm
+import markdown
 
 import utils
 import users
@@ -62,12 +63,64 @@ def login():
     
     return render_template("login.html")
 
-
 @app.route("/logout")
 def logout():
     session.pop("account", None)
     return redirect("/login")
 
+@app.route("/cloud", methods=["GET"])
+def cloud():
+    addr = request.remote_addr
+    uid = session.get("account")
+    if uid is None: # not login
+        return redirect('/login')
+    
+    return render_template("cloud.html", uid=uid, addr=addr, base="", files=[
+        {"name": "private", "size": "", "file": False},
+        {"name": "share", "size": "", "file": False},
+        {"name": "public", "size": "", "file": False}
+        ])
+
+@app.route("/cloud/", methods=["GET"]) # redirect /cloud/ to /cloud
+def cloud_():
+    return redirect("/cloud")
+
+@app.route("/cloud/<path:subpath>", methods=["GET"])
+def cloud_browse(subpath):
+    addr = request.remote_addr
+    uid = session.get("account")
+    if uid is None: # not login
+        return redirect('/login')
+    
+    tar_path = users.get_absPath(uid, subpath)
+    if tar_path is None: # invalid path
+        return redirect("/cloud")
+
+    if os.path.isfile(tar_path): # is file, online preview
+        file_type = utils.get_filetype(tar_path)
+        if request.args.get("preview") == "true": # online preview (without page)
+            return utils.make_preview_response(tar_path, file_type)
+        else: # online preview (with page)
+            return render_template("preview.html", uid=uid, addr=addr, file=subpath, file_type=file_type)
+    
+    files = utils.list_dir(tar_path)
+
+    return render_template("cloud.html", uid=uid, addr=addr, base=subpath, files=files)
+
+@app.route("/download/<path:subpath>", methods=["GET"])
+def download(subpath):
+    addr = request.remote_addr
+    uid = session.get("account")
+    if uid is None: # not login
+        return redirect('/login')
+    
+    tar_path = users.get_absPath(uid, subpath)
+    if tar_path is None: # invalid path
+        return redirect("/cloud")
+
+    return utils.make_download_response(tar_path)
+    
+    
 
 if __name__ == "__main__":
     app.run(host=IP, port=PORT, debug=True)
