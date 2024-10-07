@@ -5,8 +5,29 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>YundingCloud</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='cloud/styles.css') }}">
+
+    <script>
+        function showMakeDirPrompt() {
+            var newDir = prompt("Enter the name of the new directory:");
+            if (newDir) {
+                document.getElementById('new-dir-input').value = newDir;
+                document.getElementById('mkdir-form').submit();
+            }
+        }
+    </script>
 </head>
+
 <body>
+    <!--Flask.flash info-->
+    <div class="flash-container">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% set category, message = messages[-1] %}
+                <p class="flash {{ category }}">{{ message }}</p>
+            {% endif %}
+        {% endwith %}
+    </div>
+
     <div class="container">
         <h1>Cloud Space</h1>
         <div>
@@ -14,6 +35,25 @@
             <p>ip: {{addr}}</p>
             <p>directory: /{{base}}</p>
         </div>
+
+        <!--not at base directory-->
+        {% if base != '' %}
+        <!--upload file-->
+        <form action="/upload" method="POST" enctype="multipart/form-data">
+            <p class="phint">
+                File Upload:
+                <input type="file" name="file">
+                <input type="submit" value="Upload">
+                <input type="hidden" name="base" value="{{ base }}">
+        </form>
+        <!--make new directory-->
+        <button onclick="showMakeDirPrompt()">Make Directory</button>
+        <form id="mkdir-form" action="/mkdir" method="POST" style="display: none;">
+            <input type="hidden" name="base" value="{{ base }}">
+            <input type="hidden" name="new_dir" id="new-dir-input">
+        </form>
+        {% endif %}
+
         <div class="file-list">
             {% if base %}
                 <form method="GET" action="/cloud/{{ '/'.join(base.split('/')[:-1]) }}">

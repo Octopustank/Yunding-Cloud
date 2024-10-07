@@ -120,7 +120,54 @@ def download(subpath):
 
     return utils.make_download_response(tar_path)
     
+@app.route("/upload", methods=["POST"])
+def upload():
+    addr = request.remote_addr
+    uid = session.get("account")
+    base = request.form.get("base")
+    if uid is None: # not login
+        return redirect('/login')
+
+    file = request.files["file"]
+    if not file: # no file selected
+        flash("Please select a file", "warning")
+        return redirect(f"/cloud/{base}")
     
+    if file.content_length > FILE_MAXSIZE:
+        flash(f"The file size exceeds the limit ({utils.humanize_bytes(FILE_MAXSIZE)})", "error")
+        return redirect(f"/cloud/{base}")
+    
+    file_path, file_name = utils.make_unique(users.get_absPath(uid, base), file.filename)
+    file.save(file_path)
+    flash(f"File {file_name} uploaded", "success")
+    return redirect(f"/cloud/{base}")
+
+@app.route("/mkdir", methods=["POST"])
+def mkdir():
+    uid = session.get("account")
+    base = request.form.get("base")
+    new_dir = request.form.get("new_dir")
+    if uid is None: # not login
+        return redirect('/login')
+    
+    if new_dir is None or new_dir == "":
+        flash("Please input a directory name", "warning")
+        return redirect(f"/cloud/{base}")
+    
+    new_dir = os.path.join(base, new_dir)
+    new_dir_path = users.get_absPath(uid, new_dir)
+
+    if os.path.exists(new_dir_path):
+        flash(f"Directory {new_dir} already exists", "warning")
+        return redirect(f"/cloud/{base}")
+    try:
+        os.mkdir(new_dir_path)
+    except Exception:
+        flash(f"Directory {new_dir} create failed", "error")
+        return redirect(f"/cloud/{base}")
+    
+    flash(f"Directory {new_dir} created", "success")
+    return redirect(f"/cloud/{base}")
 
 if __name__ == "__main__":
     app.run(host=IP, port=PORT, debug=True)

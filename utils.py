@@ -107,7 +107,7 @@ def make_unique(path:str, file_name:str) -> tuple:
     """
     make file name unique
 
-    :param path: file path
+    :param path: file path (folder path)
     :param file_name: file name
     :return: (unique file path, uinque file name)
     """
