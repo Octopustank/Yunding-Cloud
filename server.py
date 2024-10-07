@@ -5,6 +5,7 @@ from urllib.parse import quote
 import time as tm
 
 import utils
+import users
 
 IP = "0.0.0.0"
 PORT = 5000
@@ -34,26 +35,26 @@ def login():
         
         if uid is not None and pwd is not None: # filled uid and pwd, check login
             reset = request.form.get("reset")
-            if reset == "true" and utils.check_user(uid) == -1: # pwd need reset
-                utils.change_pwd(uid, pwd)
-                flash("Password reset success")
+            if reset == "true" and users.check_user(uid) == -1: # pwd need reset
+                users.change_pwd(uid, pwd)
+                flash("Password reset success", "success")
                 return render_template("login.html")
 
-            if utils.check_login(uid, pwd) == 1:
+            if users.check_login(uid, pwd) == 1:
                 session["account"] = uid
                 return redirect("/")
-            elif utils.check_user(uid) == -1:
-                flash("User not exist")
+            elif users.check_user(uid) == -1:
+                flash("User not exist", "warning")
                 return render_template("login.html")
             else:
-                flash("Password incorrect")
+                flash("Password incorrect", "error")
                 return render_template("login.html", uid=uid)
 
         # only filled uid, check user and ask for password
-        uid_condition = utils.check_user(uid)
+        uid_condition = users.check_user(uid)
 
         if uid_condition == 0: # user not exist
-            flash("User not exist")
+            flash("User not exist", "warning")
             return render_template("login.html")
         elif uid_condition == -1: # user pwd reseted
             return render_template("login.html", uid=uid, reset='true') # pwd need reset

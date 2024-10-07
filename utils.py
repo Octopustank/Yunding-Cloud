@@ -17,25 +17,31 @@ HOME_ROOT = os.path.join(PATH, "home")
 DATA_PATH = os.path.join(PATH, "data")
 USER_LIST = []
 
-def _read_user_roots(user_list:list) -> dict:
+def condition_assert(message, condition=False) -> None:
     """
-    get user folders
+    exit if condition is not satisfied
+    """
+    if not condition:
+        print(message)
+        print('Press any key to exit...')
+        exit(1)
 
-    :param user_list: user list
-    :return: user folders:
-        {
-            user1: {
-                "private": user1 private folder path,
-                "public": user1 public folder path
-            },
-            ...
-        }
+
+def getip() -> str:
     """
-    make_private_path = lambda user, sub_folder: os.path.join(HOME_ROOT, user, sub_folder)
-    user_folders = {user: {"private": make_private_path(user, PRIVATE_FOLDER),
-                           "public": make_private_path(SHARE_USER, user)}
-                           for user in user_list}
-    return user_folders
+    get server ip address
+    :return: ip address
+    """
+    try:
+        s=socket.socket(socket.AF_INET,socket.SOCK_DGRAM)
+        s.connect(('8.8.8.8',80))
+        ip=s.getsockname()[0]
+    except Exception as err:
+        condition_assert(f"Network Error: {err}")
+    finally:
+        s.close()
+    return ip
+
 
 def _convert_size(size_bytes: int) -> str:
     """
@@ -78,30 +84,6 @@ def list_dir(path: str) -> list:
         file_list.append(file_info)
     return file_list
 
-def condition_assert(message, condition=False):
-    """
-    exit if condition is not satisfied
-    """
-    if not condition:
-        print(message)
-        print('Press any key to exit...')
-        exit(1)
-
-def getip() -> str:
-    """
-    get server ip address
-    :return: ip address
-    """
-    try:
-        s=socket.socket(socket.AF_INET,socket.SOCK_DGRAM)
-        s.connect(('8.8.8.8',80))
-        ip=s.getsockname()[0]
-    except Exception as err:
-        condition_assert(f"Network Error: {err}")
-    finally:
-        s.close()
-    return ip
-
 def make_unique(path:str, file_name:str) -> tuple:
     """
     make file name unique
@@ -142,59 +124,8 @@ def write_file(file_path:str, data) -> None:
     with open(file_path,"w",encoding="utf-8") as f:
         js.dump(data, f, ensure_ascii=False, indent=True)
 
-def get_user_info() -> dict:
-    """
-    get user dict
 
-    :return: user info dict
-    """
-    
-    user_file = os.path.join(DATA_PATH, "users.json")
-    return read_file(user_file)
-
-def get_users() -> list:
-    """
-    get user list
-
-    :return: user list
-    """
-    
-    user_info = get_user_info()
-    return user_info.keys()
-
-def get_user_loginInfo() -> dict:
-    """
-    get user login info
-
-    :return: user login info
-    """
-    
-    login_file = os.path.join(DATA_PATH, "login.json")
-    return read_file(login_file)
-
-def get_user_folders() -> dict:
-    """
-    get user folders
-    """
-    
-    user_folders = _read_user_roots(get_users())
-    return user_folders
-
-def check_user(uid:str) -> bool:
-    """
-    check user exist
-    
-    :param uid: user id
-    :return: 0: user not exist, 1: user exist, -1: user pwd reseted
-    """
-    if uid in get_users():
-        if get_user_loginInfo().get(uid) == -1:
-            return -1
-        return 1
-    else:
-        return 0
-
-def _encrypt_pwd(pwd:str) -> str:
+def encrypt_pwd(pwd:str) -> str:
     """
     encrypt password
     
@@ -204,35 +135,3 @@ def _encrypt_pwd(pwd:str) -> str:
 
     encrypted_pwd = hashlib.sha1(pwd.encode('utf-8')).hexdigest()
     return encrypted_pwd
-
-def check_login(uid:str, pwd:str) -> bool:
-    """
-    check login
-    
-    :param uid: user id
-    :param pwd: password
-    :return: 0: login failed, 1: login success, -1: user not exist
-    """
-
-    login_info = get_user_loginInfo()
-    encrypted_pwd = login_info.get(uid)
-
-    if encrypted_pwd == _encrypt_pwd(pwd): # login success
-        return 1
-    elif encrypted_pwd is None: # user not exist
-        return -1
-    else: # password error
-        return 0
-
-def change_pwd(uid:str, new_pwd:str) -> None:
-    """
-    change password
-    
-    :param uid: user id
-    :param pwd: password
-    """
-    
-    login_info = get_user_loginInfo()
-    login_info[uid] = _encrypt_pwd(new_pwd)
-    login_file = os.path.join(DATA_PATH, "login.json")
-    write_file(login_file, login_info)
