@@ -5,8 +5,20 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>YundingCloud-FilePreview</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='cloud/styles.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='common/styles.css') }}">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=0.5, maximum-scale=2.0, user-scalable=yes" /> 
 </head>
 <body>
+    <!--Flask.flash info-->
+    <div class="flash-container">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% set category, message = messages[-1] %}
+                <p class="flash {{ category }}">{{ message }}</p>
+            {% endif %}
+        {% endwith %}
+    </div>
+
     <div class="container">
         <h1>File Preview</h1>
         <a href="/cloud/{{ '/'.join(file.split('/')[:-1]) }}">Back</a>

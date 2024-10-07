@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <title>YundingCloud-Login</title>
     <link rel="stylesheet" type="text/css" href="{{ url_for('static',filename='login/styles.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='common/styles.css') }}">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=0.5, maximum-scale=2.0, user-scalable=yes" /> 
 </head>
 <body>
@@ -24,6 +25,7 @@
             <!--Enter uid-->
                 <div class="header">
                     <h1>Login</h1>
+                    <span class="back-link" onclick="window.location.href='/'">Back</span>
                 </div>
                 <div class="form-group">
                     <label for="uid">User Name</label>

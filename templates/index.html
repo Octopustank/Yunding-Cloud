@@ -1,3 +1,81 @@
-uid: {{uid}}
-addr: {{addr}}
-<a href="/logout">退出</a>
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YundingCloud</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='index/styles.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='common/styles.css') }}">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=0.5, maximum-scale=2.0, user-scalable=yes" /> 
+
+    <!-- The following JavaScript code is used to implement the banner rotation feature. -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            let banners = {{ banners|tojson }};
+            let bannerIndex = 0;
+            const bannerElement = document.getElementById('banner');
+
+            function showNextBanner() {
+                bannerElement.style.transition = 'none';
+                bannerElement.style.transform = 'translateX(100%)';
+                setTimeout(() => {
+                    bannerElement.src = banners[bannerIndex];
+                    bannerElement.style.transition = 'transform 0.5s ease-in-out';
+                    bannerElement.style.transform = 'translateX(0)';
+                    bannerIndex = (bannerIndex + 1) % banners.length;
+                }, 50);
+            }
+
+            setInterval(showNextBanner, 5000);
+            showNextBanner();
+        });
+    </script>
+</head>
+
+<body>
+    <!--Flask.flash info-->
+    <div class="flash-container">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% set category, message = messages[-1] %}
+                <p class="flash {{ category }}">{{ message }}</p>
+            {% endif %}
+        {% endwith %}
+    </div>
+
+    <header>
+        <div class="header-content">
+            <div class="title-container">
+                <h1>Yunding Cloud Service</h1>
+                <div class="divider"></div>
+                <img src="{{ url_for('static', filename='logo/yunding.png') }}" alt="Logo" class="logo">
+            </div>
+            <div class="user-actions">
+                {% if uid %}
+                    <span>UID: {{uid}}</span>
+                    <a href="/cloud" class="cloud-button">Cloud</a>
+                    <a href="/logout" class="logout-button">Logout</a>
+                {% else %}
+                    <a href="/login" class="login-button">Login</a>
+                {% endif %}
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="banner">
+            <img id="banner" src="" alt="Banner">
+        </div>
+        <div class="user-info">
+            <div class="info-item">
+                <span>IP Address:</span>
+                <span>{{addr}}</span>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>2024 | YundingAcademy</p>
+    </footer>
+</body>
+</html>

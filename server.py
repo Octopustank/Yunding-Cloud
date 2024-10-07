@@ -1,9 +1,6 @@
-from flask import Flask, render_template, request, redirect, send_file, flash, session, make_response
-import datetime as dt
+from flask import Flask, render_template, request, redirect, flash, session
 import os
-from urllib.parse import quote
 import time as tm
-import markdown
 
 import utils
 import users
@@ -21,10 +18,9 @@ app.secret_key = "very-hard-to-guess-string"
 def index():
     addr = request.remote_addr
     uid = session.get("account")
-    if uid is None: # not login
-        return redirect('/login')
-    else: # already login
-        return render_template("index.html", uid=uid, addr=addr)
+    banners = os.listdir("static/banners")
+    banners = [f"/static/banners/{banner}" for banner in banners]
+    return render_template("index.html", uid=uid, addr=addr, banners=banners)
     
 @app.route("/login", methods=["GET", "POST"])
 def login():
@@ -43,6 +39,7 @@ def login():
 
             if users.check_login(uid, pwd) == 1:
                 session["account"] = uid
+                flash("Login success", "success")
                 return redirect("/")
             elif users.check_user(uid) == -1:
                 flash("User not exist", "warning")
@@ -66,6 +63,7 @@ def login():
 @app.route("/logout")
 def logout():
     session.pop("account", None)
+    flash("Logout success", "success")
     return redirect("/login")
 
 @app.route("/cloud", methods=["GET"])
@@ -122,6 +120,7 @@ def download(subpath):
     
     tar_path = users.get_absPath(uid, subpath)
     if tar_path is None: # invalid path
+        flash("Invalid path", "error")
         return redirect("/cloud")
 
     return utils.make_download_response(tar_path)

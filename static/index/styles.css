@@ -1,0 +1,131 @@
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f9;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    background-color: #fff;
+    padding: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    position: fixed;
+    top: 0;
+    z-index: 1000;
+}
+
+header h1 {
+    margin: 0;
+    font-size: 24px;
+    margin-right: 10px;
+}
+
+.divider {
+    width: 1px;
+    height: 40px;
+    background-color: #000;
+    margin: 0 10px;
+}
+
+header img.logo {
+    height: 40px;
+    width: auto;
+}
+
+.header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+}
+
+.title-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-grow: 1;
+}
+
+.user-actions {
+    margin-left: auto;
+}
+
+.container {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    width: 80%;
+    max-width: 800px;
+    margin-top: 80px;
+}
+
+.banner {
+    position: relative;
+    width: 100%;
+    height: 300px;
+    overflow: hidden;
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+
+.banner img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    position: center;
+    transition: transform 0.5s ease-in-out;
+}
+
+.user-info {
+    margin-bottom: 20px;
+    text-align: left;
+}
+
+.user-info .info-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px;
+    background-color: #f9f9f9;
+    border-radius: 5px;
+    margin-bottom: 10px;
+}
+
+.user-info .info-item span {
+    font-weight: lighter;
+    font-size: 10px;
+    color: #333;
+}
+
+.logout-button, .login-button, .cloud-button {
+    display: inline-block;
+    padding: 5px 20px;
+    color: #4178d5;
+    background-color: #cfdaed;
+    text-decoration: none;
+    font-size: 10px;
+    border-radius: 8px;
+    transition: background-color 0.3s ease;
+}
+
+.logout-button:hover, .login-button:hover, .cloud-button:hover {
+    color: #cfdaed;
+    background-color: #4178d5;
+}
+
+footer {
+    position: fixed;
+    bottom: 10px;
+    font-size: 12px;
+    color: #666;
+}

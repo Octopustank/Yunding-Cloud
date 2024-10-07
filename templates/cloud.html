@@ -5,7 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>YundingCloud</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='cloud/styles.css') }}">
-
+    <link rel="stylesheet" href="{{ url_for('static', filename='common/styles.css') }}">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=0.5, maximum-scale=2.0, user-scalable=yes" /> 
+    
     <script>
         function showMakeDirPrompt() {
             var newDir = prompt("Enter the name of the new directory:");
@@ -29,6 +31,8 @@
     </div>
 
     <div class="container">
+        <a href="/logout">Logout</a>
+        <a href="/cloud">Home</a>
         <h1>Cloud Space</h1>
         <div>
             <p>uid: {{uid}}</p>

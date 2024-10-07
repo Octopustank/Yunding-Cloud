@@ -1,0 +1,44 @@
+/* Flask-Flash Animation*/
+@keyframes slideDown {
+    from {
+        top: -50px;
+        opacity: 0;
+    }
+    to {
+        top: 10px;
+        opacity: 1;
+    }
+}
+
+.flash-container {
+    position: fixed;
+    top: -50px; /* original position is out of screen */
+    left: 50%;
+    transform: translateX(-50%);
+    width: auto;
+    text-align: center;
+    z-index: 1000;
+    animation: slideDown 0.5s forwards; /* animation */
+}
+
+.flash {
+    display: inline-block;
+    padding: 10px;
+    margin-bottom: 15px;
+    border-radius: 5px;
+}
+
+.flash.success {
+    background-color: #d4edda;
+    color: #155724;
+}
+
+.flash.warning {
+    background-color: #fff3cd;
+    color: #856404;
+}
+
+.flash.error {
+    background-color: #f8d7da;
+    color: #721c24;
+}
