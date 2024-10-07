@@ -13,7 +13,7 @@ def _read_user_roots(user_list:list) -> dict:
         {
             user1: {
                 "private": user1 private folder path,
-                "public": user1 public folder path
+                "sahre": user1 sahre folder path
             },
             ...
         }
@@ -61,7 +61,7 @@ def get_user_folders() -> dict:
         {
             user1: {
                 "private": user1 private folder path,
-                "public": user1 public folder path
+                "share": user1 share folder path
             },
             ...
         }
@@ -123,6 +123,7 @@ def get_absPath(uid:str, private_path:str) -> str:
     :param private_path: private path
     :return: absolute path
     """
+    print(private_path)
     if private_path is None or private_path == "":
         return None
     if uid not in get_users():
@@ -130,14 +131,21 @@ def get_absPath(uid:str, private_path:str) -> str:
     
     path_split = private_path.split("/")
 
-    filter_base = None # get base folder
+    folder_base = None # get base folder
     if path_split[0] == "public":
-        filter_base = utils.PUBLIC_PATH
+        folder_base = utils.PUBLIC_PATH
+    elif path_split[0] == "visit":
+        if len(path_split) == 1: # user list folder
+            return "visit"
+        if path_split[1] not in get_users():
+            return None
+        folder_base = get_user_folders()[path_split[1]]["share"]
+        path_split.pop(0)
     else:
-        filter_base = get_user_folders()[uid].get(path_split[0])
-    if filter_base is None: # base folder not exist
+        folder_base = get_user_folders()[uid].get(path_split[0])
+    if folder_base is None: # base folder not exist
         return None
     
-    tar_path = os.path.join(filter_base, "/".join(path_split[1:]))
+    tar_path = os.path.join(folder_base, "/".join(path_split[1:]))
     return tar_path
 

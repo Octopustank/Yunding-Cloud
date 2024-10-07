@@ -76,10 +76,11 @@ def cloud():
         return redirect('/login')
     
     return render_template("cloud.html", uid=uid, addr=addr, base="", files=[
-        {"name": "private", "size": "", "file": False},
-        {"name": "share", "size": "", "file": False},
-        {"name": "public", "size": "", "file": False}
-        ])
+        {"name": "private", "file": False},
+        {"name": "share", "file": False},
+        {"name": "public", "file": False},
+        {"name": "visit", "file": False}
+        ], priviledge=False)
 
 @app.route("/cloud/", methods=["GET"]) # redirect /cloud/ to /cloud
 def cloud_():
@@ -94,18 +95,23 @@ def cloud_browse(subpath):
     
     tar_path = users.get_absPath(uid, subpath)
     if tar_path is None: # invalid path
+        flash("Invalid path", "error")
         return redirect("/cloud")
+    
+    if tar_path == "visit": # visit path
+        files = [{"name": uid, "file": False} for uid in users.get_users()] # list all users
 
-    if os.path.isfile(tar_path): # is file, online preview
+    elif os.path.isfile(tar_path): # is file, online preview
         file_type = utils.get_filetype(tar_path)
         if request.args.get("preview") == "true": # online preview (without page)
             return utils.make_preview_response(tar_path, file_type)
         else: # online preview (with page)
             return render_template("preview.html", uid=uid, addr=addr, file=subpath, file_type=file_type)
-    
-    files = utils.list_dir(tar_path)
+    else:
+        files = utils.list_dir(tar_path)
 
-    return render_template("cloud.html", uid=uid, addr=addr, base=subpath, files=files)
+    return render_template("cloud.html", uid=uid, addr=addr, base=subpath, files=files,
+                           priviledge=not subpath.startswith("visit"))
 
 @app.route("/download/<path:subpath>", methods=["GET"])
 def download(subpath):
