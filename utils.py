@@ -270,7 +270,7 @@ def check_keys() -> None:
         if keys[key]["time"] + KEY_VALID_TIME < cur_time: # key expired
             destroy_key(key)
 
-def gen_key(value:str) -> str:
+def _gen_key(value:str) -> str:
     """
     generate key and save to file
     
@@ -284,3 +284,30 @@ def gen_key(value:str) -> str:
     write_file(KEY_PATH, keys)
     return key
 
+def make_key(value:str, type:str) -> str:
+    """
+    make key
+    
+    :param value: key value
+    :param type: key type
+    :return: key
+    """
+    return _gen_key(f"{type}-{value}")
+
+def get_key_value(key:str) -> tuple:
+    """
+    get key value
+    
+    :param key: key
+    :return: None if not valid, (value:str, type:str) if valid
+    """
+    check_keys() # destroy expired keys
+    keys = read_keys()
+    key_info = keys.get(key)
+    if key_info is None: # key not exist
+        return None
+    key_value = key_info["value"].split("-")
+    key_value = [key_value[0], "-".join(key_value[1:])]
+    if len(key_value) != 2: # invalid format
+        return None
+    return tuple(key_value)

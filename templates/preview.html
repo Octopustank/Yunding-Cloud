@@ -44,7 +44,7 @@
     <div class="container">
         <div class="info">
             
-            <p>Directory: /{{file}}</p>
+            <p>Directory: /{{file}} {{privilege}}</p>
             <p>File type: {{file_type}}</p>
         </div>
    
@@ -64,6 +64,12 @@
                 <iframe src="/cloud/{{ file }}?preview=true" frameborder="0" class="preview-content"></iframe>
             {% endif %}
             <a href="/download/{{ file }}" class="header-button">Download</a>
+            {% if privilege %}
+                <a href="#" class="header-button" onclick="event.preventDefault(); document.getElementById('share-form').submit();">Share</a>
+                <form id="share-form" action="/share" method="POST" style="display: none;">
+                    <input type="hidden" name="share_file" value="{{ file }}">
+                </form>
+            {% endif %}
             
         </div>
     </div>

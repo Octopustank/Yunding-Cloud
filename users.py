@@ -156,16 +156,12 @@ def check_login(session: dict):
     key = session.get(SESSION_KEYNAME)
     if key is None:
         return False
-    utils.check_keys()
-    key_info = utils.read_keys().get(key)
-    if key_info is None:
+    
+    key_value = utils.get_key_value(key)
+    if key_value is None or key_value[0] != "account" or key_value[1] not in get_users(): # invalid account key
         return False
     
-    key_value = key_info["value"].split("-")
-    if len(key_value) == 2 and key_value[0] == "account" and key_value[1] in get_users():
-        return key_value[1]
-    
-    return False
+    return key_value[1]
 
 def login_register(uid:str) -> str:
     """
@@ -176,7 +172,7 @@ def login_register(uid:str) -> str:
     """
     if uid not in get_users():
         return None
-    key = utils.gen_key("account-" + uid)
+    key = utils.make_key(uid, "account")
     return key
 
 def logout(key:str) -> bool:

@@ -7,6 +7,7 @@ import users
 
 IP = "0.0.0.0"
 PORT = 1145
+SERVER_ADDR = "http://192.168.1.100:1145"
 
 FILE_MAXSIZE = 5 * 1024 * 1024 * 1024 # file max size 5GB
 
@@ -25,6 +26,7 @@ def index():
 @app.route("/login", methods=["GET", "POST"])
 def login():
     if users.check_login(session): # already login
+        flash("Already login", "success")
         return redirect("/")
     if request.method == "POST": # filled uid
         uid = request.form.get("uid")
@@ -76,6 +78,7 @@ def cloud():
     addr = request.remote_addr
     uid = users.check_login(session)
     if not uid: # not login
+        flash("Please login first", "warning")
         return redirect('/login')
     
     return render_template("cloud.html", uid=uid, addr=addr, base="", files=[
@@ -95,6 +98,7 @@ def cloud_browse(subpath):
     addr = request.remote_addr
     uid = users.check_login(session)
     if not uid: # not login
+        flash("Please login first", "warning")
         return redirect('/login')
     
     tar_path = users.get_absPath(uid, subpath)
@@ -110,20 +114,23 @@ def cloud_browse(subpath):
         if request.args.get("preview") == "true": # online preview (without page)
             return utils.make_preview_response(tar_path, file_type)
         else: # online preview (with page)
-            return render_template("preview.html", uid=uid, addr=addr, file=subpath, file_type=file_type)
+            return render_template("preview.html", uid=uid, addr=addr, file=subpath, file_type=file_type,
+                                   privilege=subpath.startswith("share") or subpath.startswith("public"))
     else:
         files = utils.list_dir(tar_path)
 
     return render_template("cloud.html", uid=uid, addr=addr, base=subpath, files=files,
-                           priviledge=not subpath.startswith("visit"))
+                           privilege=not subpath.startswith("visit"))
 
 @app.route("/download/<path:subpath>", methods=["GET"])
 def download(subpath):
-    addr = request.remote_addr
     uid = users.check_login(session)
     if not uid: # not login
+        flash("Please login first", "warning")
         return redirect('/login')
     
+    addr = request.remote_addr
+
     tar_path = users.get_absPath(uid, subpath)
     if tar_path is None: # invalid path
         flash("Invalid path", "error")
@@ -134,12 +141,13 @@ def download(subpath):
     
 @app.route("/upload", methods=["POST"])
 def upload():
-    addr = request.remote_addr
-    base = request.form.get("base")
-
     uid = users.check_login(session)
     if not uid: # not login
+        flash("Please login first", "warning")
         return redirect('/login')
+    
+    addr = request.remote_addr
+    base = request.form.get("base")
 
     file = request.files["file"]
     if not file: # no file selected
@@ -158,12 +166,13 @@ def upload():
 
 @app.route("/mkdir", methods=["POST"])
 def mkdir():
-    base = request.form.get("base")
-    new_dir = request.form.get("new_dir")
     uid = users.check_login(session)
     if not uid: # not login
         return redirect('/login')
     
+    base = request.form.get("base")
+    new_dir = request.form.get("new_dir")
+
     if new_dir is None or new_dir == "":
         flash("Please input a directory name", "warning")
         return redirect(f"/cloud/{base}")
@@ -183,6 +192,43 @@ def mkdir():
     print(f"Directory {new_dir} created by {uid}")
     flash(f"Directory {new_dir} created", "success")
     return redirect(f"/cloud/{base}")
+
+@app.route("/share", methods=["GET", "POST"])
+def share():
+    addr = request.remote_addr
+
+    if request.method == "GET": # using token to download shared file
+        token = request.args.get("token")
+        if token is None:
+            flash("Share need token", "error")
+            return redirect("/")
+        token_value = utils.get_key_value(token)
+        if token_value is None or token_value[0] != "share":
+            flash("Invalid token", "error")
+            return redirect("/")
+        tar_path = token_value[1]
+        if tar_path is None: # invalid path
+            flash("Invalid path", "error")
+            return redirect("/")
+        print(f"Shared file {tar_path} download by ip {addr}")
+        return utils.make_download_response(tar_path)
+    
+    else: # share file
+        uid = users.check_login(session)
+        if not uid: # not login
+            flash("Please login first", "warning")
+            return redirect('/login')
+        
+        file_path = request.form.get("share_file")
+        tar_path = users.get_absPath(uid, file_path)
+        if tar_path is None:
+            flash("Invalid path", "error")
+            return redirect("/cloud")
+        token = utils.make_key(tar_path, "share")
+        url = f"{SERVER_ADDR}/share?token={token}"
+        print(f"File {file_path} shared by {uid}")
+        return render_template('share.html', url=url)
+
 
 if __name__ == "__main__":
     print("Checking directories...")
