@@ -1,15 +1,16 @@
 from flask import Flask, render_template, request, redirect, flash, session
 import os
-import time as tm
 
 import utils
 import users
 
+# --- Configurations ---
 IP = "0.0.0.0"
 PORT = 1145
-SERVER_ADDR = "http://192.168.1.100:1145"
+SERVER_ADDR = "http://101.7.170.231:1145" # server address, for share link
 
-FILE_MAXSIZE = 5 * 1024 * 1024 * 1024 # file max size 5GB
+FILE_MAXSIZE = 5 * 1024 * 1024 * 1024 # file max size
+# --- Configurations ---
 
 app = Flask("Cloud")
 app.config['JSON_AS_ASCII'] = False

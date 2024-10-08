@@ -12,6 +12,7 @@ import markdown
 from urllib.parse import quote
 import time as tm
 
+# --- Configurations ---
 PRIVATE_FOLDER = "private" # private folder name in user folder (owner rw, others --)
 # share folder name in `share` folder (owner rw, others r-)
 PUBLIC_FOLDER = "public" # public folder name in `share` folder (all rw)
@@ -19,6 +20,7 @@ PUBLIC_FOLDER = "public" # public folder name in `share` folder (all rw)
 SHARE_USER = "share" # share user name
 
 KEY_VALID_TIME = 24 * 60 * 60 # key valid time (s)
+# --- Configurations ---
 
 FILE_TYPE = {
     "image": ['.jpg', '.jpeg', '.png', '.gif'],
