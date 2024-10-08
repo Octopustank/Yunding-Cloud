@@ -13,7 +13,7 @@ from urllib.parse import quote
 import time as tm
 
 PRIVATE_FOLDER = "private" # private folder name in user folder (owner rw, others --)
-SHARE_FOLDER = "share" # share folder name in `share` folder (owner rw, others r-)
+# share folder name in `share` folder (owner rw, others r-)
 PUBLIC_FOLDER = "public" # public folder name in `share` folder (all rw)
 
 SHARE_USER = "share" # share user name

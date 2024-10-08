@@ -107,7 +107,7 @@ def cloud_browse(subpath):
         return redirect("/cloud")
     
     if tar_path == "visit": # visit path
-        files = [{"name": uid, "file": False} for uid in users.get_users()] # list all users
+        files = [{"name": one, "file": False} for one in users.get_users() if uid != one] # list all users
 
     elif os.path.isfile(tar_path): # is file, online preview
         file_type = utils.get_filetype(tar_path)
