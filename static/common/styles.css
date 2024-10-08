@@ -1,12 +1,20 @@
 /* Flask-Flash Animation*/
 @keyframes slideDown {
-    from {
+    0% {
         top: -50px;
         opacity: 0;
     }
-    to {
+    30% {
         top: 10px;
         opacity: 1;
+    }
+    80% {
+        top: 10px;
+        opacity: 1;
+    }
+    100% {
+        top: -50px;
+        opacity: 0;
     }
 }
 
@@ -19,7 +27,7 @@
     width: auto;
     text-align: center;
     z-index: 1000;
-    animation: slideDown 0.5s forwards; /* animation */
+    animation: slideDown 3s forwards; /* animation */
 }
 
 .flash {

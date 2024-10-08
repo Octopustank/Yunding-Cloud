@@ -63,10 +63,10 @@
             <form action="/upload" method="POST" enctype="multipart/form-data" class="upload-form">
                 <label for="file-upload" class="phint">File Upload:</label>
                 <input type="file" name="file" id="file-upload">
-                <input type="submit" value="Upload">
+                <input type="submit" value="Upload" class="header-button">
                 <input type="hidden" name="base" value="{{ base }}">
             </form>
-            <button onclick="showMakeDirPrompt()">Make Directory</button>
+            <button onclick="showMakeDirPrompt()" class="header-button">Make Directory</button>
             <form id="mkdir-form" action="/mkdir" method="POST" style="display: none;">
                 <input type="hidden" name="base" value="{{ base }}">
                 <input type="hidden" name="new_dir" id="new-dir-input">
