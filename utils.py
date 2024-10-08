@@ -1,16 +1,9 @@
-"""
-utils for server
-"""
-
 import json as js
 import math
 import os
 import socket
-import hashlib
-from flask import make_response, send_file, Response
-import markdown
-from urllib.parse import quote
-import time as tm
+
+
 
 # --- Configurations ---
 HOME_ROOT = os.path.join(os.getcwd(), "home") # home root path. In real server, it should be /home
@@ -21,7 +14,6 @@ PUBLIC_FOLDER = "public" # public folder name in `share` folder (all rw)
 
 SHARE_USER = "share" # share user name
 
-KEY_VALID_TIME = 24 * 60 * 60 # key valid time (s)
 # --- Configurations ---
 
 FILE_TYPE = {
@@ -36,9 +28,6 @@ PATH = os.path.dirname(os.path.abspath(__file__))
 DATA_PATH = os.path.join(PATH, "data")
 PUBLIC_PATH = os.path.join(HOME_ROOT, SHARE_USER, PUBLIC_FOLDER)
 
-USER_LIST = []
-
-KEY_PATH = os.path.join(DATA_PATH, "keys.json")
 
 def condition_assert(message, condition=False) -> None:
     """
@@ -58,12 +47,6 @@ def check_workdir() -> None:
         condition_assert(f"Data path({DATA_PATH}) is not exist.\nIt has created automatically, but missing data files.")
     condition_assert(f"Home path({HOME_ROOT}) is not exist", os.path.isdir(HOME_ROOT))
     condition_assert(f"Public path({PUBLIC_PATH}) is not exist", os.path.isdir(PUBLIC_PATH))
-    if not os.path.isfile(KEY_PATH):
-        write_file(KEY_PATH, {})
-    try:
-        read_keys()
-    except:
-        condition_assert("Key file is invalid")
 
 def getip() -> str:
     """
@@ -80,8 +63,9 @@ def getip() -> str:
         s.close()
     return ip
 
+# --- file operations ---
 
-def _convert_size(size_bytes: int) -> str:
+def convert_size(size_bytes: int) -> str:
     """
     convert bytes to human readable size
 
@@ -113,7 +97,7 @@ def list_dir(path: str) -> list:
         if os.path.isfile(file_path):
             file_info = {
                 "name": file,
-                "size": _convert_size(os.path.getsize(file_path)),
+                "size": convert_size(os.path.getsize(file_path)),
                 "file": True
             }
         else:
@@ -180,149 +164,3 @@ def get_filetype(file_path:str) -> str:
             break
     return file_type
 
-def make_preview_response(file_path:str, file_type:str) -> Response:
-    """
-    make file preview response
-    
-    :param file_path: file path
-    :param file_type: file type
-    :return: response
-    """
-    # make response according to file type
-    if file_type == "image":
-        with open(file_path, 'rb') as f:  
-            response = make_response(f.read())  
-            response.headers['Content-Type'] = 'image/jpeg' # set Content-Type
-            return response  
-    elif file_type == "video":
-        with open(file_path, 'rb') as f:
-            response = make_response(f.read())
-            response.headers['Content-Type'] = 'video/mp4'
-            return response
-    elif file_type == "pdf":
-        with open(file_path, 'rb') as f:
-            response = make_response(f.read())
-            response.headers['Content-Type'] = 'application/pdf'
-            return response
-    elif file_type == "markdown":
-        with open(file_path, 'r', encoding="utf-8") as f:
-            md_content = f.read()
-            html_content = markdown.markdown(md_content)
-            response = make_response(html_content)
-            response.headers['Content-Type'] = 'text/html; charset=utf-8'
-            return response
-    elif file_type == "html":
-        with open(file_path, 'r', encoding="utf-8") as f:
-            response = make_response(f.read())
-            response.headers['Content-Type'] = 'text/html; charset=utf-8'
-            return response
-    else:
-        try: # try to open as text
-            with open(file_path, 'r', encoding="utf-8") as f:
-                response = make_response(f.read())
-                response.headers['Content-Type'] = 'text/plain; charset=utf-8'
-                return response
-        except:
-            return "Unsupported file type", 400
-
-def make_download_response(file_path:str) -> Response:
-    """
-    make file download response
-
-    :param file_path: file path
-    :return: response
-    """
-    if os.path.isfile(file_path): # is file
-        # make download response
-        file_name = quote(os.path.split(file_path)[-1]) # transfer file name to UTF-8
-        file_response = send_file(file_path, as_attachment=True, download_name=file_name)
-        file_response.headers["Content-Disposition"] += ";filename*=utf-8''{}".format(file_name) # set Content-Disposition, transfer file name to UTF-8
-        return file_response
-    else:
-        return "File not exist", 404
-
-def encrypt_pwd(pwd:str) -> str:
-    """
-    encrypt password
-    
-    :param pwd: password
-    :return: encrypted password
-    """
-
-    encrypted_pwd = hashlib.sha1(pwd.encode('utf-8')).hexdigest()
-    return encrypted_pwd
-
-def read_keys() -> dict:
-    """
-    read keys
-    
-    :return: keys ({key: {value: str, time: int}, ...})
-    """
-    keys = read_file(os.path.join(DATA_PATH, "keys.json"))
-    return keys
-
-def destroy_key(key:str) -> bool:
-    """
-    destroy key
-    
-    :param key: key
-    :return: True: destroy success, False: destroy fail
-    """
-    keys = read_keys()
-    if key not in keys.keys():
-        return False
-    keys.pop(key)
-    write_file(os.path.join(DATA_PATH, "keys.json"), keys)
-    return True
-
-def check_keys() -> None:
-    """
-    check keys and destroy expired keys
-    """
-    keys = read_keys()
-    cur_time = tm.time()
-    for key in keys.keys():
-        if keys[key]["time"] + KEY_VALID_TIME < cur_time: # key expired
-            destroy_key(key)
-
-def _gen_key(value:str) -> str:
-    """
-    generate key and save to file
-    
-    :param value: key value
-    :return: key
-    """
-    keys = read_keys()
-    cur_time = tm.time()
-    key = hashlib.sha1((value + str(cur_time)).encode('utf-8')).hexdigest()
-    keys[key] = {"value": value, "time": cur_time}
-    write_file(KEY_PATH, keys)
-    return key
-
-def make_key(value:str, type:str) -> str:
-    """
-    make key
-    
-    :param value: key value
-    :param type: key type
-    :return: key
-    """
-    return _gen_key(f"{type}-{value}")
-
-def get_key_value(key:str) -> tuple:
-    """
-    get key value
-    
-    :param key: key
-    :return: None if not valid, (value:str, type:str) if valid
-    """
-    check_keys() # destroy expired keys
-    keys = read_keys()
-    key_info = keys.get(key)
-    if key_info is None: # key not exist
-        return None
-    key_value = key_info["value"].split("-")
-    key_value = [key_value[0], "-".join(key_value[1:])]
-    if len(key_value) != 2: # invalid format
-        return None
-    return tuple(key_value)

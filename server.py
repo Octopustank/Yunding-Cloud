@@ -3,10 +3,13 @@ import os
 
 import utils
 import users
+import security
+import response
 
 # --- Configurations ---
 IP = "0.0.0.0"
 PORT = 1145
+DEBUG = True
 SERVER_ADDR = "http://101.7.170.231:1145" # server address, for share link
 
 FILE_MAXSIZE = 5 * 1024 * 1024 * 1024 # file max size
@@ -113,7 +116,7 @@ def cloud_browse(subpath):
     elif os.path.isfile(tar_path): # is file, online preview
         file_type = utils.get_filetype(tar_path)
         if request.args.get("preview") == "true": # online preview (without page)
-            return utils.make_preview_response(tar_path, file_type)
+            return response.make_preview_response(tar_path, file_type)
         else: # online preview (with page)
             return render_template("preview.html", uid=uid, addr=addr, file=subpath, file_type=file_type,
                                    privilege=subpath.startswith("share") or subpath.startswith("public"))
@@ -138,7 +141,7 @@ def download(subpath):
         return redirect("/cloud")
 
     print(f"File {subpath} download by {uid} from {addr}")
-    return utils.make_download_response(tar_path)
+    return response.make_download_response(tar_path)
     
 @app.route("/upload", methods=["POST"])
 def upload():
@@ -156,7 +159,7 @@ def upload():
         return redirect(f"/cloud/{base}")
     
     if file.content_length > FILE_MAXSIZE:
-        flash(f"The file size exceeds the limit ({utils.humanize_bytes(FILE_MAXSIZE)})", "error")
+        flash(f"The file size exceeds the limit ({utils.convert_size(FILE_MAXSIZE)})", "error")
         return redirect(f"/cloud/{base}")
     
     file_path, file_name = utils.make_unique(users.get_absPath(uid, base), file.filename)
@@ -203,7 +206,7 @@ def share():
         if token is None:
             flash("Share need token", "error")
             return redirect("/")
-        token_value = utils.get_key_value(token)
+        token_value = security.get_key_value(token)
         if token_value is None or token_value[0] != "share":
             flash("Invalid token", "error")
             return redirect("/")
@@ -212,7 +215,7 @@ def share():
             flash("Invalid path", "error")
             return redirect("/")
         print(f"Shared file {tar_path} download by ip {addr}")
-        return utils.make_download_response(tar_path)
+        return response.make_download_response(tar_path)
     
     else: # share file
         uid = users.check_login(session)
@@ -225,7 +228,7 @@ def share():
         if tar_path is None:
             flash("Invalid path", "error")
             return redirect("/cloud")
-        token = utils.make_key(tar_path, "share")
+        token = security.make_key(tar_path, "share")
         url = f"{SERVER_ADDR}/share?token={token}"
         print(f"File {file_path} shared by {uid}")
         return render_template('share.html', url=url)
@@ -234,7 +237,9 @@ def share():
 if __name__ == "__main__":
     print("Checking directories...")
     utils.check_workdir()
+    security.check_workdir()
     users.check_workdir()
     print("Done.")
     print("Starting server")
-    app.run(host=IP, port=PORT, debug=True)
+    app.run(host=IP, port=PORT, debug=DEBUG)
+    

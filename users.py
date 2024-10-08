@@ -1,5 +1,6 @@
 import os
 import utils
+import security
 
 LOGIN_PATH = os.path.join(utils.DATA_PATH, "login.json")
 SESSION_KEYNAME = "Yunding_key"
@@ -97,7 +98,7 @@ def login(uid:str, pwd:str) -> bool:
     login_info = get_user_loginInfo()
     encrypted_pwd = login_info.get(uid)
 
-    if encrypted_pwd == utils.encrypt_pwd(pwd): # login success
+    if encrypted_pwd == security.encrypt_pwd(pwd): # login success
         return 1
     elif encrypted_pwd is None: # user not exist
         return -1
@@ -113,7 +114,7 @@ def change_pwd(uid:str, new_pwd:str) -> None:
     """
     
     login_info = get_user_loginInfo()
-    login_info[uid] = utils.encrypt_pwd(new_pwd)
+    login_info[uid] = security.encrypt_pwd(new_pwd)
     utils.write_file(LOGIN_PATH, login_info)
 
 def get_absPath(uid:str, private_path:str) -> str:
@@ -160,7 +161,7 @@ def check_login(session: dict):
     if key is None:
         return False
     
-    key_value = utils.get_key_value(key)
+    key_value = security.get_key_value(key)
     if key_value is None or key_value[0] != "account" or key_value[1] not in get_users(): # invalid account key
         return False
     
@@ -175,7 +176,7 @@ def login_register(uid:str) -> str:
     """
     if uid not in get_users():
         return None
-    key = utils.make_key(uid, "account")
+    key = security.make_key(uid, "account")
     return key
 
 def logout(key:str) -> bool:
@@ -187,4 +188,4 @@ def logout(key:str) -> bool:
     """
     if key is None:
         return False
-    return utils.destroy_key(key)
+    return security.destroy_key(key)
