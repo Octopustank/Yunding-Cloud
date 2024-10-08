@@ -1,6 +1,8 @@
 home/
 data/
-static/banners/
+
+static/banners/*
+!static/banners/Yunding_banner.png
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
