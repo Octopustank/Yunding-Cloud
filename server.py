@@ -30,11 +30,22 @@ def login():
         
         if uid is not None and pwd is not None: # filled uid and pwd, check login
             reset = request.form.get("reset")
-            if reset == "true" and users.check_user(uid) == -1: # pwd need reset
+            if reset == "1" and users.check_user(uid) == -1: # pwd need reset
+                # users.change_pwd(uid, pwd)
+                # flash("Password reset success", "success")
+                new_pwd = users.encrypt_pwd(pwd)
+                return render_template("login.html", uid=uid, reset='2', new_pwd=new_pwd)
+            elif reset == "2" and users.check_user(uid) == -1: # pwd need reset (confirm)
+                new_pwd = request.form.get("new_pwd")
+                if new_pwd is None:
+                    flash("Please input new password", "warning")
+                    return render_template("login.html")
+                if new_pwd != users.encrypt_pwd(pwd):
+                    flash("Password not match", "error")
+                    return render_template("login.html", uid=uid, reset='2', new_pwd=new_pwd)
                 users.change_pwd(uid, pwd)
                 flash("Password reset success", "success")
                 return render_template("login.html")
-
             if users.login(uid, pwd) == 1:
                 session[users.SESSION_KEYNAME] = users.login_register(uid)
                 if session[users.SESSION_KEYNAME]:
@@ -55,8 +66,8 @@ def login():
         if uid_condition == 0: # user not exist
             flash("User not exist", "warning")
             return render_template("login.html")
-        elif uid_condition == -1: # user pwd reseted
-            return render_template("login.html", uid=uid, reset='true') # pwd need reset
+        elif uid_condition == -1: # user pwd need reset
+            return render_template("login.html", uid=uid, reset='1') # pwd need reset
         return render_template("login.html", uid=uid) # fill password
     
     return render_template("login.html")

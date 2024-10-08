@@ -32,7 +32,7 @@
                     <input type="text" id="uid" name="uid" required>
                 </div>
 
-            {% elif reset == "true" %}
+            {% elif reset == "1" %}
             <!--Reset password-->
                 <div class="header">
                     <h1>Hi, {{uid}}</h1>
@@ -44,7 +44,21 @@
                     <input type="password" id="pwd" name="pwd" required>
                 </div>
                 <input type="hidden" name="uid" value="{{ uid }}">
-                <input type="hidden" name="reset" value="true">
+                <input type="hidden" name="reset" value={{reset}}>
+
+            {% elif reset == "2" %}
+                <div class="header">
+                    <h1>Hi, {{uid}}</h1>
+                    <h2>Please confirm your password to reset</h2>
+                    <span class="back-link" onclick="window.location.href='/login'">Abort</span>
+                </div>
+                <div class="form-group">
+                    <label for="pwd">Confirm Password</label>
+                    <input type="password" id="pwd" name="pwd" required>
+                </div>
+                <input type="hidden" name="uid" value="{{ uid }}">
+                <input type="hidden" name="reset" value={{reset}}>
+                <input type="hidden" name="new_pwd" value="{{ new_pwd }}">
 
             {% else %}
             <!--Enter password-->
