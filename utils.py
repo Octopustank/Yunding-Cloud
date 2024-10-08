@@ -11,11 +11,11 @@ FILE_TYPE = {
     "html": ['.html', '.htm']
 }
 
-def condition_assert(message, condition=False) -> None:
+def condition_assert(condition=False, message="") -> None:
     """
     exit if condition is not satisfied
     """
-    if not condition:
+    if condition == False:
         print(message)
         print('Exit.')
         exit(1)
@@ -30,7 +30,7 @@ def getip() -> str:
         s.connect(('8.8.8.8',80))
         ip=s.getsockname()[0]
     except Exception as err:
-        condition_assert(f"Network Error: {err}")
+        condition_assert(message=f"Network Error: {err}")
     finally:
         s.close()
     return ip
