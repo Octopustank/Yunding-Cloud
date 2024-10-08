@@ -17,14 +17,14 @@ app.secret_key = "very-hard-to-guess-string"
 @app.route("/")
 def index():
     addr = request.remote_addr
-    uid = session.get("account")
+    uid = users.check_login(session)
     banners = os.listdir("static/banners")
     banners = [f"/static/banners/{banner}" for banner in banners]
-    return render_template("index.html", uid=uid, addr=addr, banners=banners)
+    return render_template("index.html", uid=uid if uid else None, addr=addr, banners=banners)
     
 @app.route("/login", methods=["GET", "POST"])
 def login():
-    if session.get("account") is not None: # already login
+    if users.check_login(session): # already login
         return redirect("/")
     if request.method == "POST": # filled uid
         uid = request.form.get("uid")
@@ -37,9 +37,12 @@ def login():
                 flash("Password reset success", "success")
                 return render_template("login.html")
 
-            if users.check_login(uid, pwd) == 1:
-                session["account"] = uid
-                flash("Login success", "success")
+            if users.login(uid, pwd) == 1:
+                session[users.SESSION_KEYNAME] = users.login_register(uid)
+                if session[users.SESSION_KEYNAME]:
+                    flash("Login success", "success")
+                else:
+                    flash("Login failed", "error")
                 return redirect("/")
             elif users.check_user(uid) == -1:
                 flash("User not exist", "warning")
@@ -62,15 +65,17 @@ def login():
 
 @app.route("/logout")
 def logout():
-    session.pop("account", None)
-    flash("Logout success", "success")
-    return redirect("/login")
+    if users.logout(session.pop(users.SESSION_KEYNAME, None)):
+        flash("Logout success", "success")
+    else:
+        flash("Logout failed", "error")
+    return redirect("/")
 
 @app.route("/cloud", methods=["GET"])
 def cloud():
     addr = request.remote_addr
-    uid = session.get("account")
-    if uid is None: # not login
+    uid = users.check_login(session)
+    if not uid: # not login
         return redirect('/login')
     
     return render_template("cloud.html", uid=uid, addr=addr, base="", files=[
@@ -87,8 +92,9 @@ def cloud_():
 @app.route("/cloud/<path:subpath>", methods=["GET"])
 def cloud_browse(subpath):
     addr = request.remote_addr
-    uid = session.get("account")
-    if uid is None: # not login
+    addr = request.remote_addr
+    uid = users.check_login(session)
+    if not uid: # not login
         return redirect('/login')
     
     tar_path = users.get_absPath(uid, subpath)
@@ -114,8 +120,8 @@ def cloud_browse(subpath):
 @app.route("/download/<path:subpath>", methods=["GET"])
 def download(subpath):
     addr = request.remote_addr
-    uid = session.get("account")
-    if uid is None: # not login
+    uid = users.check_login(session)
+    if not uid: # not login
         return redirect('/login')
     
     tar_path = users.get_absPath(uid, subpath)
@@ -123,14 +129,16 @@ def download(subpath):
         flash("Invalid path", "error")
         return redirect("/cloud")
 
+    print(f"File {subpath} download by {uid} from {addr}")
     return utils.make_download_response(tar_path)
     
 @app.route("/upload", methods=["POST"])
 def upload():
     addr = request.remote_addr
-    uid = session.get("account")
     base = request.form.get("base")
-    if uid is None: # not login
+
+    uid = users.check_login(session)
+    if not uid: # not login
         return redirect('/login')
 
     file = request.files["file"]
@@ -145,14 +153,15 @@ def upload():
     file_path, file_name = utils.make_unique(users.get_absPath(uid, base), file.filename)
     file.save(file_path)
     flash(f"File {file_name} uploaded", "success")
+    print(f"File {file_name} uploaded by {uid} from {addr}")
     return redirect(f"/cloud/{base}")
 
 @app.route("/mkdir", methods=["POST"])
 def mkdir():
-    uid = session.get("account")
     base = request.form.get("base")
     new_dir = request.form.get("new_dir")
-    if uid is None: # not login
+    uid = users.check_login(session)
+    if not uid: # not login
         return redirect('/login')
     
     if new_dir is None or new_dir == "":
@@ -171,8 +180,14 @@ def mkdir():
         flash(f"Directory {new_dir} create failed", "error")
         return redirect(f"/cloud/{base}")
     
+    print(f"Directory {new_dir} created by {uid}")
     flash(f"Directory {new_dir} created", "success")
     return redirect(f"/cloud/{base}")
 
 if __name__ == "__main__":
+    print("Checking directories...")
+    utils.check_workdir()
+    users.check_workdir()
+    print("Done.")
+    print("Starting server")
     app.run(host=IP, port=PORT, debug=True)

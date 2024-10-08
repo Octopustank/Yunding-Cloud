@@ -10,12 +10,15 @@ import hashlib
 from flask import make_response, send_file, Response
 import markdown
 from urllib.parse import quote
+import time as tm
 
 PRIVATE_FOLDER = "private" # private folder name in user folder (owner rw, others --)
 SHARE_FOLDER = "share" # share folder name in `share` folder (owner rw, others r-)
 PUBLIC_FOLDER = "public" # public folder name in `share` folder (all rw)
 
 SHARE_USER = "share" # share user name
+
+KEY_VALID_TIME = 24 * 60 * 60 # key valid time (s)
 
 FILE_TYPE = {
     "image": ['.jpg', '.jpeg', '.png', '.gif'],
@@ -31,14 +34,25 @@ PUBLIC_PATH = os.path.join(HOME_ROOT, SHARE_USER, PUBLIC_FOLDER)
 
 USER_LIST = []
 
+KEY_PATH = os.path.join(DATA_PATH, "keys.json")
+
 def condition_assert(message, condition=False) -> None:
     """
     exit if condition is not satisfied
     """
     if not condition:
         print(message)
-        print('Press any key to exit...')
+        print('Exit.')
         exit(1)
+
+def check_workdir() -> None:
+    """
+    check work directory
+    """
+    condition_assert(f"Home path({HOME_ROOT}) is not exist", os.path.isdir(HOME_ROOT))
+    condition_assert(f"Data path({DATA_PATH}) is not exist", os.path.isdir(DATA_PATH))
+    condition_assert(f"Public path({PUBLIC_PATH}) is not exist", os.path.isdir(PUBLIC_PATH))
+    condition_assert(f"Key path({KEY_PATH}) is not exist", os.path.isfile(KEY_PATH))
 
 
 def getip() -> str:
@@ -79,7 +93,6 @@ def list_dir(path: str) -> list:
     :param path: folder path
     :return: file list [dict{"name":str, "size":str, "file":bool},...]
     """
-    print(path)
     if not os.path.isdir(path): # path not exist
         return []
 
@@ -100,7 +113,6 @@ def list_dir(path: str) -> list:
                 "file": False
             }
         file_list.append(file_info)
-    print(file_list)
     return file_list
 
 def make_unique(path:str, file_name:str) -> tuple:
@@ -224,3 +236,51 @@ def encrypt_pwd(pwd:str) -> str:
 
     encrypted_pwd = hashlib.sha1(pwd.encode('utf-8')).hexdigest()
     return encrypted_pwd
+
+def read_keys() -> dict:
+    """
+    read keys
+    
+    :return: keys ({key: {value: str, time: int}, ...})
+    """
+    keys = read_file(os.path.join(DATA_PATH, "keys.json"))
+    return keys
+
+def destroy_key(key:str) -> bool:
+    """
+    destroy key
+    
+    :param key: key
+    :return: True: destroy success, False: destroy fail
+    """
+    keys = read_keys()
+    if key not in keys.keys():
+        return False
+    keys.pop(key)
+    write_file(os.path.join(DATA_PATH, "keys.json"), keys)
+    return True
+
+def check_keys() -> None:
+    """
+    check keys and destroy expired keys
+    """
+    keys = read_keys()
+    cur_time = tm.time()
+    for key in keys.keys():
+        if keys[key]["time"] + KEY_VALID_TIME < cur_time: # key expired
+            destroy_key(key)
+
+def gen_key(value:str) -> str:
+    """
+    generate key and save to file
+    
+    :param value: key value
+    :return: key
+    """
+    keys = read_keys()
+    cur_time = tm.time()
+    key = hashlib.sha1((value + str(cur_time)).encode('utf-8')).hexdigest()
+    keys[key] = {"value": value, "time": cur_time}
+    write_file(KEY_PATH, keys)
+    return key
+

@@ -1,8 +1,17 @@
 import os
 import utils
 
-USER_PATH = os.path.join(utils.DATA_PATH, "users.json")
 LOGIN_PATH = os.path.join(utils.DATA_PATH, "login.json")
+SESSION_KEYNAME = "Yunding_key"
+
+def check_workdir() -> None:
+    utils.condition_assert(f"Login path({LOGIN_PATH}) is not exist", os.path.isfile(LOGIN_PATH))
+    users = get_users()
+    for user in users:
+        user_private_path = os.path.join(utils.HOME_ROOT, user, utils.PRIVATE_FOLDER)
+        user_share_path = os.path.join(utils.HOME_ROOT, utils.SHARE_USER, user)
+        utils.condition_assert(f"User {user} private folder is not exist", os.path.isdir(user_private_path))
+        utils.condition_assert(f"User {user} share folder is not exist", os.path.isdir(user_share_path))
 
 def _read_user_roots(user_list:list) -> dict:
     """
@@ -24,26 +33,6 @@ def _read_user_roots(user_list:list) -> dict:
                            for user in user_list}
     return user_folders
 
-
-def get_user_info() -> dict:
-    """
-    get user dict
-
-    :return: user info dict
-    """
-    
-    return utils.read_file(USER_PATH)
-
-def get_users() -> list:
-    """
-    get user list
-
-    :return: user list
-    """
-    
-    user_info = get_user_info()
-    return user_info.keys()
-
 def get_user_loginInfo() -> dict:
     """
     get user login info
@@ -52,6 +41,15 @@ def get_user_loginInfo() -> dict:
     """
     
     return utils.read_file(LOGIN_PATH)
+
+def get_users() -> list:
+    """
+    get user list
+
+    :return: user list
+    """
+    
+    return get_user_loginInfo().keys()
 
 def get_user_folders() -> dict:
     """
@@ -84,9 +82,9 @@ def check_user(uid:str) -> bool:
     else:
         return 0
 
-def check_login(uid:str, pwd:str) -> bool:
+def login(uid:str, pwd:str) -> bool:
     """
-    check login
+    login
     
     :param uid: user id
     :param pwd: password
@@ -123,7 +121,6 @@ def get_absPath(uid:str, private_path:str) -> str:
     :param private_path: private path
     :return: absolute path
     """
-    print(private_path)
     if private_path is None or private_path == "":
         return None
     if uid not in get_users():
@@ -149,3 +146,46 @@ def get_absPath(uid:str, private_path:str) -> str:
     tar_path = os.path.join(folder_base, "/".join(path_split[1:]))
     return tar_path
 
+
+def check_login(session: dict):
+    """
+    check login status
+    
+    :return: False: not login, str: login user id
+    """
+    key = session.get(SESSION_KEYNAME)
+    if key is None:
+        return False
+    utils.check_keys()
+    key_info = utils.read_keys().get(key)
+    if key_info is None:
+        return False
+    
+    key_value = key_info["value"].split("-")
+    if len(key_value) == 2 and key_value[0] == "account" and key_value[1] in get_users():
+        return key_value[1]
+    
+    return False
+
+def login_register(uid:str) -> str:
+    """
+    login
+
+    :param uid: user id
+    :return: login key(None: login fail)
+    """
+    if uid not in get_users():
+        return None
+    key = utils.gen_key("account-" + uid)
+    return key
+
+def logout(key:str) -> bool:
+    """
+    logout
+
+    :param key: login key
+    :return: True: logout success, False: logout fail
+    """
+    if key is None:
+        return False
+    return utils.destroy_key(key)
