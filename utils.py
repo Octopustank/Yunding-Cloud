@@ -49,8 +49,10 @@ def check_workdir() -> None:
     """
     check work directory
     """
+    if not os.path.isdir(DATA_PATH):
+        os.mkdir(DATA_PATH)
+        condition_assert(f"Data path({DATA_PATH}) is not exist.\nIt has created automatically, but missing data files.")
     condition_assert(f"Home path({HOME_ROOT}) is not exist", os.path.isdir(HOME_ROOT))
-    condition_assert(f"Data path({DATA_PATH}) is not exist", os.path.isdir(DATA_PATH))
     condition_assert(f"Public path({PUBLIC_PATH}) is not exist", os.path.isdir(PUBLIC_PATH))
     condition_assert(f"Key path({KEY_PATH}) is not exist", os.path.isfile(KEY_PATH))
     if not os.path.isfile(KEY_PATH):
