@@ -1,21 +1,8 @@
 import os
 import utils
-import security
-
-LOGIN_PATH = os.path.join(utils.DATA_PATH, "login.json")
-SESSION_KEYNAME = "Yunding_key"
-
-def check_workdir() -> None:
-    utils.condition_assert(f"Login path({LOGIN_PATH}) is not exist", os.path.isfile(LOGIN_PATH))
-    try:
-        users = get_users()
-    except:
-        utils.condition_assert("Login file is not valid", False)
-    for user in users:
-        user_private_path = os.path.join(utils.HOME_ROOT, user, utils.PRIVATE_FOLDER)
-        user_share_path = os.path.join(utils.HOME_ROOT, utils.SHARE_USER, user)
-        utils.condition_assert(f"User {user} private folder is not exist", os.path.isdir(user_private_path))
-        utils.condition_assert(f"User {user} share folder is not exist", os.path.isdir(user_share_path))
+import tokens
+import hashlib
+from settings import *
 
 def _read_user_roots(user_list:list) -> dict:
     """
@@ -31,11 +18,22 @@ def _read_user_roots(user_list:list) -> dict:
             ...
         }
     """
-    make_private_path = lambda user, sub_folder: os.path.join(utils.HOME_ROOT, user, sub_folder)
-    user_folders = {user: {"private": make_private_path(user, utils.PRIVATE_FOLDER),
-                           "share": make_private_path(utils.SHARE_USER, user)}
+    make_private_path = lambda user, sub_folder: os.path.join(HOME_ROOT, user, sub_folder)
+    user_folders = {user: {"private": make_private_path(user, PRIVATE_FOLDER),
+                           "share": make_private_path(SHARE_USER, user)}
                            for user in user_list}
     return user_folders
+
+def encrypt_pwd(pwd:str) -> str:
+    """
+    encrypt password
+    
+    :param pwd: password
+    :return: encrypted password
+    """
+
+    encrypted_pwd = hashlib.sha1(pwd.encode('utf-8')).hexdigest()
+    return encrypted_pwd
 
 def get_user_loginInfo() -> dict:
     """
@@ -45,15 +43,6 @@ def get_user_loginInfo() -> dict:
     """
     
     return utils.read_file(LOGIN_PATH)
-
-def get_users() -> list:
-    """
-    get user list
-
-    :return: user list
-    """
-    
-    return get_user_loginInfo().keys()
 
 def get_user_folders() -> dict:
     """
@@ -69,7 +58,7 @@ def get_user_folders() -> dict:
         }
     """
     
-    user_folders = _read_user_roots(get_users())
+    user_folders = _read_user_roots(USER_LIST)
     return user_folders
 
 def check_user(uid:str) -> bool:
@@ -79,7 +68,7 @@ def check_user(uid:str) -> bool:
     :param uid: user id
     :return: 0: user not exist, 1: user exist, -1: user pwd reseted
     """
-    if uid in get_users():
+    if uid in USER_LIST:
         if get_user_loginInfo().get(uid) == -1:
             return -1
         return 1
@@ -98,7 +87,7 @@ def login(uid:str, pwd:str) -> bool:
     login_info = get_user_loginInfo()
     encrypted_pwd = login_info.get(uid)
 
-    if encrypted_pwd == security.encrypt_pwd(pwd): # login success
+    if encrypted_pwd == encrypt_pwd(pwd): # login success
         return 1
     elif encrypted_pwd is None: # user not exist
         return -1
@@ -114,7 +103,7 @@ def change_pwd(uid:str, new_pwd:str) -> None:
     """
     
     login_info = get_user_loginInfo()
-    login_info[uid] = security.encrypt_pwd(new_pwd)
+    login_info[uid] = encrypt_pwd(new_pwd)
     utils.write_file(LOGIN_PATH, login_info)
 
 def get_absPath(uid:str, private_path:str) -> str:
@@ -127,18 +116,18 @@ def get_absPath(uid:str, private_path:str) -> str:
     """
     if private_path is None or private_path == "":
         return None
-    if uid not in get_users():
+    if uid not in USER_LIST:
         return None
     
     path_split = private_path.split("/")
 
     folder_base = None # get base folder
     if path_split[0] == "public":
-        folder_base = utils.PUBLIC_PATH
+        folder_base = PUBLIC_PATH
     elif path_split[0] == "visit":
         if len(path_split) == 1: # user list folder
             return "visit"
-        if path_split[1] not in get_users():
+        if path_split[1] not in USER_LIST:
             return None
         folder_base = get_user_folders()[path_split[1]]["share"]
         path_split.pop(0)
@@ -157,35 +146,35 @@ def check_login(session: dict):
     
     :return: False: not login, str: login user id
     """
-    key = session.get(SESSION_KEYNAME)
-    if key is None:
+    token = session.get(SESSION_KEYNAME)
+    if token is None:
         return False
     
-    key_value = security.get_key_value(key)
-    if key_value is None or key_value[0] != "account" or key_value[1] not in get_users(): # invalid account key
+    token_value = tokens.get_token_value(token)
+    if token_value is None or token_value[0] != "account" or token_value[1] not in USER_LIST: # invalid account token
         return False
     
-    return key_value[1]
+    return token_value[1]
 
 def login_register(uid:str) -> str:
     """
     login
 
     :param uid: user id
-    :return: login key(None: login fail)
+    :return: login token(None: login fail)
     """
-    if uid not in get_users():
+    if uid not in USER_LIST:
         return None
-    key = security.make_key(uid, "account")
-    return key
+    token = tokens.make_token(uid, "account")
+    return token
 
-def logout(key:str) -> bool:
+def logout(token:str) -> bool:
     """
     logout
 
-    :param key: login key
+    :param token: login token
     :return: True: logout success, False: logout fail
     """
-    if key is None:
+    if token is None:
         return False
-    return security.destroy_key(key)
+    return tokens.destroy_token(token)

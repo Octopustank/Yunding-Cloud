@@ -1,20 +1,8 @@
-import json as js
+import json
 import math
 import os
 import socket
-
-
-
-# --- Configurations ---
-HOME_ROOT = os.path.join(os.getcwd(), "home") # home root path. In real server, it should be /home
-
-PRIVATE_FOLDER = "private" # private folder name in user folder (owner rw, others --)
-# share folder name in `share` folder (owner rw, others r-)
-PUBLIC_FOLDER = "public" # public folder name in `share` folder (all rw)
-
-SHARE_USER = "share" # share user name
-
-# --- Configurations ---
+from settings import *
 
 FILE_TYPE = {
     "image": ['.jpg', '.jpeg', '.png', '.gif'],
@@ -24,11 +12,6 @@ FILE_TYPE = {
     "html": ['.html', '.htm']
 }
 
-PATH = os.path.dirname(os.path.abspath(__file__))
-DATA_PATH = os.path.join(PATH, "data")
-PUBLIC_PATH = os.path.join(HOME_ROOT, SHARE_USER, PUBLIC_FOLDER)
-
-
 def condition_assert(message, condition=False) -> None:
     """
     exit if condition is not satisfied
@@ -37,16 +20,6 @@ def condition_assert(message, condition=False) -> None:
         print(message)
         print('Exit.')
         exit(1)
-
-def check_workdir() -> None:
-    """
-    check work directory
-    """
-    if not os.path.isdir(DATA_PATH):
-        os.mkdir(DATA_PATH)
-        condition_assert(f"Data path({DATA_PATH}) is not exist.\nIt has created automatically, but missing data files.")
-    condition_assert(f"Home path({HOME_ROOT}) is not exist", os.path.isdir(HOME_ROOT))
-    condition_assert(f"Public path({PUBLIC_PATH}) is not exist", os.path.isdir(PUBLIC_PATH))
 
 def getip() -> str:
     """
@@ -137,7 +110,7 @@ def read_file(file_path:str):
     """
     with open(file_path, 'r', encoding='utf-8') as f:
         data = f.read().encode(encoding='utf-8')
-        result = js.loads(data)
+        result = json.loads(data)
     return result
 
 def write_file(file_path:str, data) -> None:
@@ -147,7 +120,7 @@ def write_file(file_path:str, data) -> None:
     :param file_path: file path
     """
     with open(file_path,"w",encoding="utf-8") as f:
-        js.dump(data, f, ensure_ascii=False, indent=True)
+        json.dump(data, f, ensure_ascii=False, indent=True)
 
 def get_filetype(file_path:str) -> str:
     """
@@ -158,9 +131,9 @@ def get_filetype(file_path:str) -> str:
     """
     extension = os.path.splitext(file_path)[1].lower() # get file extension
     file_type = "other"
-    for key in FILE_TYPE.keys():
-        if extension in FILE_TYPE[key]:
-            file_type = key
+    for type_ in FILE_TYPE.keys():
+        if extension in FILE_TYPE[type_]:
+            file_type = type_
             break
     return file_type
 

@@ -2,7 +2,7 @@ import os
 from flask import make_response, send_file, Response
 import markdown
 from urllib.parse import quote
-
+from settings import *
 
 def make_preview_response(file_path:str, file_type:str) -> Response:
     """

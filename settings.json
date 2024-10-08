@@ -1,0 +1,21 @@
+{
+    "server.ip": "0.0.0.0",
+    "server.port": 1145,
+    "server.debug": true,
+    "server.addr": "http://101.7.170.231:1145",
+    "server.session_keyname": "Yunding_key",
+
+    "cloud.file_max_size": 5368709120,
+        
+    "folder.home_root": "./home",
+    "folder.private": "private",
+    "folder.public": "public",
+
+    "user.shared": "share",
+    "user.list": [
+        "admin",
+        "test"
+    ],
+
+    "token.valid_time": 86400
+}

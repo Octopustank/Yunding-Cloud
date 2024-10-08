@@ -3,17 +3,9 @@ import os
 
 import utils
 import users
-import security
+import tokens
 import response
-
-# --- Configurations ---
-IP = "0.0.0.0"
-PORT = 1145
-DEBUG = True
-SERVER_ADDR = "http://101.7.170.231:1145" # server address, for share link
-
-FILE_MAXSIZE = 5 * 1024 * 1024 * 1024 # file max size
-# --- Configurations ---
+from settings import *
 
 app = Flask("Cloud")
 app.config['JSON_AS_ASCII'] = False
@@ -111,7 +103,7 @@ def cloud_browse(subpath):
         return redirect("/cloud")
     
     if tar_path == "visit": # visit path
-        files = [{"name": one, "file": False} for one in users.get_users() if uid != one] # list all users
+        files = [{"name": one, "file": False} for one in USER_LIST if uid != one] # list all users
 
     elif os.path.isfile(tar_path): # is file, online preview
         file_type = utils.get_filetype(tar_path)
@@ -206,7 +198,7 @@ def share():
         if token is None:
             flash("Share need token", "error")
             return redirect("/")
-        token_value = security.get_key_value(token)
+        token_value = tokens.get_token_value(token)
         if token_value is None or token_value[0] != "share":
             flash("Invalid token", "error")
             return redirect("/")
@@ -228,18 +220,12 @@ def share():
         if tar_path is None:
             flash("Invalid path", "error")
             return redirect("/cloud")
-        token = security.make_key(tar_path, "share")
+        token = tokens.make_token(tar_path, "share")
         url = f"{SERVER_ADDR}/share?token={token}"
         print(f"File {file_path} shared by {uid}")
         return render_template('share.html', url=url)
 
 
 if __name__ == "__main__":
-    print("Checking directories...")
-    utils.check_workdir()
-    security.check_workdir()
-    users.check_workdir()
-    print("Done.")
-    print("Starting server")
     app.run(host=IP, port=PORT, debug=DEBUG)
     
