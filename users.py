@@ -6,7 +6,10 @@ SESSION_KEYNAME = "Yunding_key"
 
 def check_workdir() -> None:
     utils.condition_assert(f"Login path({LOGIN_PATH}) is not exist", os.path.isfile(LOGIN_PATH))
-    users = get_users()
+    try:
+        users = get_users()
+    except:
+        utils.condition_assert("Login file is not valid", False)
     for user in users:
         user_private_path = os.path.join(utils.HOME_ROOT, user, utils.PRIVATE_FOLDER)
         user_share_path = os.path.join(utils.HOME_ROOT, utils.SHARE_USER, user)

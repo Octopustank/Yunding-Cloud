@@ -53,7 +53,12 @@ def check_workdir() -> None:
     condition_assert(f"Data path({DATA_PATH}) is not exist", os.path.isdir(DATA_PATH))
     condition_assert(f"Public path({PUBLIC_PATH}) is not exist", os.path.isdir(PUBLIC_PATH))
     condition_assert(f"Key path({KEY_PATH}) is not exist", os.path.isfile(KEY_PATH))
-
+    if not os.path.isfile(KEY_PATH):
+        write_file(KEY_PATH, {})
+    try:
+        read_keys()
+    except:
+        condition_assert("Key file is invalid")
 
 def getip() -> str:
     """
