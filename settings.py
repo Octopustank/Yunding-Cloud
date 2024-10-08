@@ -60,7 +60,7 @@ PUBLIC_PATH = os.path.join(HOME_ROOT, SHARE_USER, PUBLIC_FOLDER)
 # check missing vars
 condition_assert(SERVER_ADDR is not None, "server address not set")
 
-# check data exists
+# check data
 if not os.path.exists(DATA_PATH):
     print("data folder not exists, create it")
     os.mkdir(DATA_PATH)
