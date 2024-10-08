@@ -13,6 +13,8 @@ from urllib.parse import quote
 import time as tm
 
 # --- Configurations ---
+HOME_ROOT = os.path.join(os.getcwd(), "home") # home root path. In real server, it should be /home
+
 PRIVATE_FOLDER = "private" # private folder name in user folder (owner rw, others --)
 # share folder name in `share` folder (owner rw, others r-)
 PUBLIC_FOLDER = "public" # public folder name in `share` folder (all rw)
@@ -30,7 +32,6 @@ FILE_TYPE = {
 }
 
 PATH = os.path.dirname(os.path.abspath(__file__))
-HOME_ROOT = os.path.join(PATH, "home")
 DATA_PATH = os.path.join(PATH, "data")
 PUBLIC_PATH = os.path.join(HOME_ROOT, SHARE_USER, PUBLIC_FOLDER)
 
