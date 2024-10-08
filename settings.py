@@ -88,11 +88,13 @@ else:
     condition_assert(type(_tokens) == dict, "tokens.json is not a dict")
 
 # check folder exists
-condition_assert(os.path.exists(HOME_ROOT), "home root folder not exists")
-condition_assert(os.path.exists(PUBLIC_PATH), "public folder not exists")
+condition_assert(os.path.exists(HOME_ROOT), f"home root folder not exists. It should be {HOME_ROOT}")
+condition_assert(os.path.exists(PUBLIC_PATH), f"public folder not exists. It should be {PUBLIC_PATH}")
 for _user in USER_LIST:
-    condition_assert(os.path.exists(os.path.join(HOME_ROOT, _user, PRIVATE_FOLDER)),
-                     f"{_user} private folder not exists")
-    condition_assert(os.path.exists(os.path.join(HOME_ROOT, SHARE_USER, _user)),
-                        f"{_user} shared folder not exists")
+    _private_folder = os.path.join(HOME_ROOT, _user, PRIVATE_FOLDER)
+    _shared_folder = os.path.join(HOME_ROOT, SHARE_USER, _user)
+    condition_assert(os.path.exists(_private_folder),
+                     f"{_user} private folder not exists. It should be {_private_folder}")
+    condition_assert(os.path.exists(_shared_folder),
+                        f"{_user} shared folder not exists. It should be {_shared_folder}")
 
