@@ -6,7 +6,7 @@ import utils
 import users
 
 IP = "0.0.0.0"
-PORT = 5000
+PORT = 1145
 
 FILE_MAXSIZE = 5 * 1024 * 1024 * 1024 # file max size 5GB
 

@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>YundingCloud</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='index/styles.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='common/styles.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='index/styles.css') }}">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=0.5, maximum-scale=2.0, user-scalable=yes" /> 
 
     <!-- The following JavaScript code is used to implement the banner rotation feature. -->
@@ -53,10 +53,10 @@
             <div class="user-actions">
                 {% if uid %}
                     <span>UID: {{uid}}</span>
-                    <a href="/cloud" class="cloud-button">Cloud</a>
-                    <a href="/logout" class="logout-button">Logout</a>
+                    <a href="/cloud" class="header-button">Cloud</a>
+                    <a href="/logout" class="header-button">Logout</a>
                 {% else %}
-                    <a href="/login" class="login-button">Login</a>
+                    <a href="/login" class="header-button">Login</a>
                 {% endif %}
             </div>
         </div>
@@ -66,7 +66,7 @@
         <div class="banner">
             <img id="banner" src="" alt="Banner">
         </div>
-        <div class="user-info">
+        <div class="container-attach-info">
             <div class="info-item">
                 <span>IP Address:</span>
                 <span>{{addr}}</span>

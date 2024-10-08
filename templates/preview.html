@@ -4,10 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>YundingCloud-FilePreview</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='cloud/styles.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='common/styles.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='cloud/styles.css') }}">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=0.5, maximum-scale=2.0, user-scalable=yes" /> 
 </head>
+
 <body>
     <!--Flask.flash info-->
     <div class="flash-container">
@@ -19,25 +20,57 @@
         {% endwith %}
     </div>
 
+    <!--Header-->
+    <header>
+        <div class="header-content">
+            <div class="title-container">
+                <h1>Yunding Cloud Service</h1>
+                <div class="divider"></div>
+                <img src="{{ url_for('static', filename='logo/yunding.png') }}" alt="Logo" class="logo">
+            </div>
+            <div class="user-actions">
+                {% if uid %}
+                    <span>UID: {{uid}}</span>
+                    <a href="/logout" class="header-button">Logout</a>
+                {% else %}
+                    <a href="/login" class="header-button">Login</a>
+                {% endif %}
+                <a href="/" class="header-button">Index</a>
+            </div>
+        </div>
+    </header>
+
+    <!--Main Content-->
     <div class="container">
-        <h1>File Preview</h1>
-        <a href="/cloud/{{ '/'.join(file.split('/')[:-1]) }}">Back</a>
+        <div class="info">
+            
+            <p>Directory: /{{file}}</p>
+            <p>File type: {{file_type}}</p>
+        </div>
+   
+        <a href="/cloud/{{ '/'.join(file.split('/')[:-1]) }}" class="back-button">Back</a>
+
         <div class="preview">
             {% if file_type == 'image' %}
-                <img src="/cloud/{{ file }}?preview=true" alt="Image Preview">
+                <img src="/cloud/{{ file }}?preview=true" alt="Image Preview" class="preview-content">
             {% elif file_type == 'video' %}
-                <video controls>
+                <video controls class="preview-content">
                     <source src="/cloud/{{ file }}?preview=true" type="video/mp4">
                     Your browser does not support the video tag.
                 </video>
             {% elif file_type == 'pdf' %}
-                <iframe src="/cloud/{{ file }}?preview=true" frameborder="0" width="100%" height="600px"></iframe>
+                <iframe src="/cloud/{{ file }}?preview=true" frameborder="0" width="100%" height="600px" class="preview-content"></iframe>
             {% else %}
-                <iframe src="/cloud/{{ file }}?preview=true" frameborder="0"></iframe>
+                <iframe src="/cloud/{{ file }}?preview=true" frameborder="0" class="preview-content"></iframe>
             {% endif %}
-            <p>file type: {{file_type}}</p>
-            <a href="/download/{{ file }}">Download</a>
+            <a href="/download/{{ file }}" class="header-button">Download</a>
+            
         </div>
     </div>
+
+    <!--Footer-->
+    <footer>
+        <p>2024 | YundingAcademy</p>
+    </footer>
 </body>
 </html>

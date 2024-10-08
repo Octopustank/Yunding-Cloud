@@ -4,10 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>YundingCloud</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='cloud/styles.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='common/styles.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='cloud/styles.css') }}">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=0.5, maximum-scale=2.0, user-scalable=yes" /> 
     
+    <!--Make directory dialog box-->
     <script>
         function showMakeDirPrompt() {
             var newDir = prompt("Enter the name of the new directory:");
@@ -30,34 +31,50 @@
         {% endwith %}
     </div>
 
+    <!--Header-->
+    <header>
+        <div class="header-content">
+            <div class="title-container">
+                <h1>Yunding Cloud Service</h1>
+                <div class="divider"></div>
+                <img src="{{ url_for('static', filename='logo/yunding.png') }}" alt="Logo" class="logo">
+            </div>
+            <div class="user-actions">
+                {% if uid %}
+                    <span>UID: {{uid}}</span>
+                    <a href="/logout" class="header-button">Logout</a>
+                {% else %}
+                    <a href="/login" class="header-button">Login</a>
+                {% endif %}
+                <a href="/" class="header-button">Index</a>
+            </div>
+        </div>
+    </header>
+
+    <!--Main Content-->
     <div class="container">
-        <a href="/logout">Logout</a>
-        <a href="/cloud">Home</a>
-        <h1>Cloud Space</h1>
-        <div>
-            <p>uid: {{uid}}</p>
-            <p>ip: {{addr}}</p>
-            <p>directory: /{{base}}</p>
+        <div class="info">
+            <p>Directory: /{{base}}</p>
         </div>
 
-        <!--with edit priviledge-->
-        {% if priviledge%}
-        <!--upload file-->
-        <form action="/upload" method="POST" enctype="multipart/form-data">
-            <p class="phint">
-                File Upload:
-                <input type="file" name="file">
+        <!--File Actions (need priviliged)-->
+        {% if priviledge %}
+        <div class="file-actions">
+            <form action="/upload" method="POST" enctype="multipart/form-data" class="upload-form">
+                <label for="file-upload" class="phint">File Upload:</label>
+                <input type="file" name="file" id="file-upload">
                 <input type="submit" value="Upload">
                 <input type="hidden" name="base" value="{{ base }}">
-        </form>
-        <!--make new directory-->
-        <button onclick="showMakeDirPrompt()">Make Directory</button>
-        <form id="mkdir-form" action="/mkdir" method="POST" style="display: none;">
-            <input type="hidden" name="base" value="{{ base }}">
-            <input type="hidden" name="new_dir" id="new-dir-input">
-        </form>
+            </form>
+            <button onclick="showMakeDirPrompt()">Make Directory</button>
+            <form id="mkdir-form" action="/mkdir" method="POST" style="display: none;">
+                <input type="hidden" name="base" value="{{ base }}">
+                <input type="hidden" name="new_dir" id="new-dir-input">
+            </form>
+        </div>
         {% endif %}
 
+        <!--File List-->
         <div class="file-list">
             {% if base %}
                 <form method="GET" action="/cloud/{{ '/'.join(base.split('/')[:-1]) }}">
@@ -67,16 +84,31 @@
             {% if files %}
                 {% for file in files %}
                     <form method="GET" action="/cloud/{{ base }}/{{ file['name'] }}">
-                        <button type="submit" class="file-item">{{ file["name"] }}</button>
-                        {% if file["file"] == True %}
-                            {{ file["size"] }}
-                        {% endif %}
+                        <button type="submit" class="file-item {% if file["file"] %}file{% endif %}">
+                            <span>{{ file["name"] }}</span>
+                            {% if file["file"] %}
+                                <span class="file-size">{{ file["size"] }}</span>
+                            {% endif %}
+                        </button>
                     </form>
                 {% endfor %}
             {% else %}
                 <p>No files in this directory :-(</p>
             {% endif %}
         </div>
+
+        <!--Attach Info-->
+        <div class="container-attach-info">
+            <div class="info-item">
+                <span>IP Address:</span>
+                <span>{{addr}}</span>
+            </div>
+        </div>
     </div>
+
+    <!--Footer-->
+    <footer>
+        <p>2024 | YundingAcademy</p>
+    </footer>
 </body>
 </html>
