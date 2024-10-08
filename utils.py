@@ -28,7 +28,8 @@ FILE_TYPE = {
     "image": ['.jpg', '.jpeg', '.png', '.gif'],
     "video": ['.mp4', '.avi', '.mov', '.mp3', '.wav', '.mkv'],
     "pdf": ['.pdf'],
-    "markdown": ['.md']
+    "markdown": ['.md'],
+    "html": ['.html', '.htm']
 }
 
 PATH = os.path.dirname(os.path.abspath(__file__))
@@ -134,12 +135,12 @@ def make_unique(path:str, file_name:str) -> tuple:
     """
     exist_names = os.listdir(path)
     first_name, last_name = os.path.splitext(file_name)
-    name = [first_name, last_name, 0] # 文件名各部分和序号(若为0则实际不加)
-    make_name = lambda x:x[0]+(f"({str(x[2])})"if x[2]!=0 else "")+x[1] # 拼接文件名函数
+    name = [first_name, last_name, 0] # file name, file extension, file number(0 means no number)
+    make_name = lambda x:x[0]+(f"({str(x[2])})"if x[2]!=0 else "")+x[1] # concat file name
     while True:
-        if not make_name(name) in exist_names: # 该文件名独一无二
+        if not make_name(name) in exist_names: # file name is unique
             break
-        name[2] += 1 # 该文件名已存在，序号增加
+        name[2] += 1 # existing name, add number
     name = make_name(name)
     return (os.path.join(path,name), name)
 
@@ -208,6 +209,11 @@ def make_preview_response(file_path:str, file_type:str) -> Response:
             md_content = f.read()
             html_content = markdown.markdown(md_content)
             response = make_response(html_content)
+            response.headers['Content-Type'] = 'text/html; charset=utf-8'
+            return response
+    elif file_type == "html":
+        with open(file_path, 'r', encoding="utf-8") as f:
+            response = make_response(f.read())
             response.headers['Content-Type'] = 'text/html; charset=utf-8'
             return response
     else:
