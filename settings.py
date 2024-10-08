@@ -1,5 +1,6 @@
 import os
 import json
+from utils import condition_assert, read_file, write_file
 
 PATH = os.path.dirname(os.path.abspath(__file__))
 DATA_PATH = os.path.join(PATH, "data")
@@ -11,7 +12,7 @@ _vars = {
     "server.ip": "0.0.0.0",
     "server.port": 1145,
     "server.debug": True,
-    "server.addr": "http://101.7.170.231:1145",
+    "server.addr": None,
     "server.session_keyname": "Yunding_key",
 
     "cloud.file_max_size": 5 * 1024 * 1024 * 1024,
@@ -26,6 +27,7 @@ _vars = {
     "token.valid_time": 24 * 60 * 60
 }
 
+condition_assert(os.path.exists(SETTINGS_PATH), "settings file not exists")
 with open(SETTINGS_PATH, "r", encoding="utf-8") as f:
     _vars.update(json.load(f))
 
@@ -52,7 +54,45 @@ USER_LIST = _vars["user.list"]
 # -- token vars --
 TOKEN_VALID_TIME = _vars["token.valid_time"]
 
-
 # concat paths
 PUBLIC_PATH = os.path.join(HOME_ROOT, SHARE_USER, PUBLIC_FOLDER)
+
+# check missing vars
+condition_assert(SERVER_ADDR is not None, "server address not set")
+
+# check data exists
+if not os.path.exists(DATA_PATH):
+    print("data folder not exists, create it")
+    os.mkdir(DATA_PATH)
+
+if not os.path.exists(LOGIN_PATH):
+    print("login.json not exists, create it")
+    _login_dict = {_user: -1 for _user in USER_LIST}
+    write_file(LOGIN_PATH, _login_dict)
+else:
+    _login_dict = read_file(LOGIN_PATH)
+    condition_assert(type(_login_dict) == dict, "login.json is not a dict")
+    for _user in USER_LIST:
+        if not _user in _login_dict:
+            _login_dict[_user] = -1
+    for _user in _login_dict:
+        if not _user in USER_LIST: # user not exists
+            del _login_dict[_user] # delete user
+    write_file(LOGIN_PATH, _login_dict)
+
+if not os.path.exists(TOKEN_PATH):
+    print("tokens.json not exists, create it")
+    write_file(TOKEN_PATH, {})
+else:
+    _tokens = read_file(TOKEN_PATH)
+    condition_assert(type(_tokens) == dict, "tokens.json is not a dict")
+
+# check folder exists
+condition_assert(os.path.exists(HOME_ROOT), "home root folder not exists")
+condition_assert(os.path.exists(PUBLIC_PATH), "public folder not exists")
+for _user in USER_LIST:
+    condition_assert(os.path.exists(os.path.join(HOME_ROOT, _user, PRIVATE_FOLDER)),
+                     f"{_user} private folder not exists")
+    condition_assert(os.path.exists(os.path.join(HOME_ROOT, SHARE_USER, _user)),
+                        f"{_user} shared folder not exists")
 

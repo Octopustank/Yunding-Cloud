@@ -2,7 +2,6 @@ import json
 import math
 import os
 import socket
-from settings import *
 
 FILE_TYPE = {
     "image": ['.jpg', '.jpeg', '.png', '.gif'],
