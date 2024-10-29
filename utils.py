@@ -12,6 +12,8 @@ FILE_TYPE = {
     "html": ['.html', '.htm']
 }
 
+ILLIGAL_CHARS = ['\\', '/', ':', '*', '?', '"', '<', '>', '|']
+
 def condition_assert(condition=False, message="") -> None:
     """
     exit if condition is not satisfied
@@ -106,6 +108,19 @@ def make_unique(path:str, file_name:str) -> tuple:
         name[2] += 1 # existing name, add number
     name = make_name(name)
     return (os.path.join(path,name), name)
+
+def check_name(name:str) -> bool:
+    """
+    check file or dir name
+    """
+    if name is None or name == "":
+        return False
+    if name[0] == ".": # hidden file
+        return False
+    for ch in ILLIGAL_CHARS:
+        if ch in name:
+            return False
+    return True
 
 def read_file(file_path:str):
     """

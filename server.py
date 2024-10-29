@@ -165,6 +165,9 @@ def upload():
         flash(f"The file size exceeds the limit ({utils.convert_size(FILE_MAXSIZE)})", "error")
         return redirect(f"/cloud/{base}")
     
+    if not utils.check_name(file.filename):
+        flash(f"Illigal file name {file.filename}", "error")
+        return redirect(f"/cloud/{base}")
     file_path, file_name = utils.make_unique(users.get_absPath(uid, base), file.filename)
     file.save(file_path)
     flash(f"File {file_name} uploaded", "success")
@@ -182,6 +185,9 @@ def mkdir():
 
     if new_dir is None or new_dir == "":
         flash("Please input a directory name", "warning")
+        return redirect(f"/cloud/{base}")
+    elif not utils.check_name(new_dir):
+        flash(f"Illigal directory name {new_dir}", "error")
         return redirect(f"/cloud/{base}")
     
     new_dir = os.path.join(base, new_dir)
