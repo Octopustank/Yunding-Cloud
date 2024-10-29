@@ -1,3 +1,4 @@
+
 import json
 import math
 import os
@@ -16,9 +17,15 @@ def condition_assert(condition=False, message="") -> None:
     exit if condition is not satisfied
     """
     if condition == False:
-        print(message)
+        print("[ Error ]", message)
         print('Exit.')
         exit(1)
+
+def info(message) -> None:
+    """
+    print info message
+    """
+    print("[ Info ]", message)
 
 def getip() -> str:
     """
