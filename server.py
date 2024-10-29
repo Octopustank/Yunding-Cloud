@@ -232,7 +232,7 @@ def share():
             flash("Invalid path", "error")
             return redirect("/cloud")
         token = tokens.make_token(tar_path, "share")
-        url = f"{SERVER_ADDR}/share?token={token}"
+        url = f"{SHARE_URL_BASE}/share?token={token}"
         print(f"File {file_path} shared by {uid}")
         return render_template('share.html', url=url)
 

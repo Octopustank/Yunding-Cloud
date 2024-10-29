@@ -13,7 +13,7 @@ _vars = {
     "server.port": 1145, # server port
     "server.debug": True, # debug mode
     "server.protocol": "http", # server protocol (http or https)
-    "server.addr": None, # server address for users to visit (used for file share) (e.g. 192.168.1.10:1145 or example.com)
+    "server.addr": None, # public server address for users to visit (used for file share) (e.g. 192.168.1.10:1145 or example.com)
     "server.session_keyname": "Yunding_key", # key name of login token in session
 
     "cloud.file_max_size": 5 * 1024 * 1024 * 1024, # max file size
@@ -75,6 +75,8 @@ if IP is None:
 if SERVER_ADDR is None:
     SERVER_ADDR = f"{getip()}:{PORT}"
     info(f"server address not set. Automatically set to {SERVER_ADDR}")
+
+SHARE_URL_BASE = f"{PROTOCOL}://{SERVER_ADDR}" # base url for file share
 
 # check data
 if not os.path.exists(DATA_PATH):
