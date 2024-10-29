@@ -240,7 +240,7 @@ def share():
         token = tokens.make_token(tar_path, "share")
         url = f"{SHARE_URL_BASE}/share?token={token}"
         print(f"File {file_path} shared by {uid}")
-        return render_template('share.html', url=url)
+        return url
 
 
 if __name__ == "__main__":

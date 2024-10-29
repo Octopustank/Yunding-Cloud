@@ -7,6 +7,22 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='common/styles.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='cloud/styles.css') }}">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=0.5, maximum-scale=2.0, user-scalable=yes" /> 
+    <script>
+        function shareFile(event) {
+            event.preventDefault();
+            const form = document.getElementById('share-form');
+            const formData = new FormData(form);
+            fetch(form.action, {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.text())
+            .then(data => {
+                document.getElementById('share-button').outerHTML = '<p>Share link: </p><div class="link-display">'+data+'</div>';
+            })
+            .catch(error => console.error('Error:', error));
+        }
+    </script>
 </head>
 
 <body>
@@ -65,7 +81,7 @@
             {% endif %}
             <a href="/download/{{ file }}" class="header-button">Download</a>
             {% if privilege %}
-                <a href="#" class="header-button" onclick="event.preventDefault(); document.getElementById('share-form').submit();">Share</a>
+                <a href="#" class="header-button" id="share-button" onclick="shareFile(event)">Share</a>
                 <form id="share-form" action="/share" method="POST" style="display: none;">
                     <input type="hidden" name="share_file" value="{{ file }}">
                 </form>

@@ -113,3 +113,16 @@ iframe {
     color: #cfdaed;
     background-color: #4178d5;
 }
+
+.link-display {
+    display: block;
+    word-wrap: break-word;
+    word-break: break-all;
+    margin: 10px 0;
+    padding: 10px;
+    background-color: #f9f9f9;
+    border-radius: 5px;
+    color: #4178d5;
+    text-decoration: none;
+    font-size: 14px;
+}
